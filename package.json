@@ -1,0 +1,49 @@
+{
+  "name": "voyager-summarizer",
+  "version": "0.0.0",
+  "description": "",
+  "keywords": [
+    "dxworks",
+    "dxw"
+  ],
+  "homepage": "https://github.com/dxworks/voyager-summarizer#readme",
+  "bugs": {
+    "url": "https://github.com/dxworks/voyager-summarizer/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dxworks/voyager-summarizer.git"
+  },
+  "license": "Apache-2.0",
+  "main": "dist/src/summarizer.js",
+  "bin": "./dist/src/summarizer.js",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "^24.13.0"
+  },
+  "scripts": {
+    "build": "npm run clean && tsc -p tsconfig.build.json",
+    "clean": "rimraf dist && rimraf --glob \\\"*.tsbuildinfo\\\"\"",
+    "clean:modules": "rimraf node_modules package-lock.json",
+    "create": "npm run build && npm run test",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
+    "local": "npm run build && npm link && npx dx-voyager --help",
+    "refresh": "rimraf node_modules package-lock.json && npm install",
+    "test": "jest --passWithNoTests",
+    "test:dev": "jest --watch"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.0.10",
+    "eslint": "^9.39.2",
+    "jest": "^30.2.0",
+    "rimraf": "^6.1.3",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.55.0"
+  }
+}
