@@ -12,6 +12,12 @@ Node.js + TypeScript starter template.
 npm install
 ```
 
+## Usage
+
+```bash
+npx voyager-summarizer "TypeScript improves JavaScript maintainability with static typing" --max-words 6
+```
+
 ## Scripts
 
 - `npm run build` - Clean and compile TypeScript to `dist/`
