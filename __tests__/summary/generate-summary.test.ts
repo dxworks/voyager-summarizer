@@ -34,8 +34,14 @@ describe('generateSummary', () => {
       conditions: []
     });
 
-    expect(writeTextFileMock).toHaveBeenCalledWith('summary.html', '<div>insider-template</div>');
-    expect(writeTextFileMock).toHaveBeenCalledWith('summary.md', '# insider markdown');
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.html',
+      expect.stringContaining('<h2>Overview</h2>\n    <ul><li>insider</li></ul>')
+    );
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      '# Voyager Summary\n\n## Overview\n- insider\n\n## insider\n# insider markdown'
+    );
     expect(result.parsedToolsCount).toBe(1);
     expect(result.writtenHtmlPath).toBe('summary.html');
     expect(result.writtenMdPath).toBe('summary.md');
@@ -62,8 +68,14 @@ describe('generateSummary', () => {
       outMd: '/out/custom-summary.md'
     });
 
-    expect(writeTextFileMock).toHaveBeenCalledWith('/out/custom-summary.html', '<article>jafax-template</article>');
-    expect(writeTextFileMock).toHaveBeenCalledWith('/out/custom-summary.md', '## jafax markdown');
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      '/out/custom-summary.html',
+      expect.stringContaining('<h2>Overview</h2>\n    <ul><li>jafax</li></ul>')
+    );
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      '/out/custom-summary.md',
+      '# Voyager Summary\n\n## Overview\n- jafax\n\n## jafax\n## jafax markdown'
+    );
     expect(result.writtenHtmlPath).toBe('/out/custom-summary.html');
     expect(result.writtenMdPath).toBe('/out/custom-summary.md');
   });
@@ -85,15 +97,21 @@ describe('generateSummary', () => {
 
     const result = await generateSummary({
       toolMd: [
-        ['insider', '/in/insider.md'],
-        ['lizard', '/in/lizard.md']
+        ['lizard', '/in/lizard.md'],
+        ['insider', '/in/insider.md']
       ],
       toolHtml: [],
       conditions: []
     });
 
     expect(result.parsedToolsCount).toBe(2);
-    expect(writeTextFileMock).toHaveBeenCalledWith('summary.html', '<div>insider</div>\n<div>lizard</div>');
-    expect(writeTextFileMock).toHaveBeenCalledWith('summary.md', '# insider\n\n# lizard');
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.html',
+      expect.stringContaining('<h2>Overview</h2>\n    <ul><li>insider</li><li>lizard</li></ul>')
+    );
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      '# Voyager Summary\n\n## Overview\n- insider\n- lizard\n\n## insider\n# insider\n\n## lizard\n# lizard'
+    );
   });
 });

@@ -1,8 +1,12 @@
 import { readTextFile, writeTextFile } from '../io/read-files';
 import { parseToolSummaryMarkdown, ParsedToolSummary } from '../parsers/parse-tool-summary-md';
+import { renderMarkdownSummary } from '../render/render-markdown';
+import { renderHtmlSummary } from '../render/render-html';
+import { buildOverview } from './build-overview';
 
 const DEFAULT_OUT_HTML = 'summary.html';
 const DEFAULT_OUT_MD = 'summary.md';
+const TOOL_ORDER = ['depminer', 'dude', 'honeydew', 'insider', 'inspector-git', 'jafax', 'lizard'];
 
 export interface GenerateSummaryInput {
   inputDir?: string;
@@ -22,7 +26,8 @@ export interface GenerateSummaryResult {
 
 export async function generateSummary(input: GenerateSummaryInput): Promise<GenerateSummaryResult> {
   const parsedTools = await parseToolSummaries(input.toolMd, input.toolHtml);
-  const content = buildReportContent(parsedTools);
+  const orderedTools = orderTools(parsedTools);
+  const content = buildReportContent(orderedTools);
   const resolvedOutHtml = input.outHtml ?? DEFAULT_OUT_HTML;
   const resolvedOutMd = input.outMd ?? DEFAULT_OUT_MD;
   const writtenPaths = await persistOutputs(content, resolvedOutHtml, resolvedOutMd);
@@ -71,13 +76,30 @@ async function parseToolSummaries(
 }
 
 function buildReportContent(parsedTools: ParsedToolSummary[]): ReportContent {
-  const markdown = parsedTools.map((tool) => tool.markdownContent).join('\n\n');
-  const html = parsedTools.map((tool) => tool.htmlTemplateContent).join('\n');
+  const overview = buildOverview(parsedTools);
+
+  const markdown = renderMarkdownSummary(overview, parsedTools);
+  const html = renderHtmlSummary(overview, parsedTools);
 
   return {
     html: html || undefined,
     markdown: markdown || undefined
   };
+}
+
+function orderTools(parsedTools: ParsedToolSummary[]): ParsedToolSummary[] {
+  const toolsByName = new Map(parsedTools.map((tool) => [tool.tool, tool]));
+  const ordered: ParsedToolSummary[] = [];
+
+  for (const toolName of TOOL_ORDER) {
+    const tool = toolsByName.get(toolName);
+
+    if (tool) {
+      ordered.push(tool);
+    }
+  }
+
+  return ordered;
 }
 
 async function persistOutputs(
