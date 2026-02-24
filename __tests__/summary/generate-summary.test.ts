@@ -22,6 +22,7 @@ describe('generateSummary', () => {
       '---',
       'tool: insider',
       'html-template: inline',
+      'status: success',
       '---',
       '<div>insider-template</div>',
       '---',
@@ -36,13 +37,16 @@ describe('generateSummary', () => {
 
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<h2>Overview</h2>\n    <ul><li>insider</li></ul>')
+      expect.stringContaining('<h2>Overview</h2>\n    <ul><li>insider (success)</li></ul>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.md',
-      '# Voyager Summary\n\n## Overview\n- insider\n\n## insider\n# insider markdown'
+      expect.stringContaining('# Voyager Summary\n\n## Overview\n- insider (success)')
     );
     expect(result.parsedToolsCount).toBe(1);
+    expect(result.parseWarnings).toEqual(
+      expect.arrayContaining([expect.stringContaining("Skipped rule 'lizard-failed' due to missing metadata values")])
+    );
     expect(result.writtenHtmlPath).toBe('summary.html');
     expect(result.writtenMdPath).toBe('summary.md');
   });
@@ -50,7 +54,7 @@ describe('generateSummary', () => {
   it('uses explicit output paths when provided', async () => {
     readTextFileMock.mockImplementation(async (filePath: string) => {
       if (filePath === '/in/jafax.md') {
-        return ['---', 'tool: jafax', 'html-template: reference', '---', '## jafax markdown'].join('\n');
+        return ['---', 'tool: jafax', 'html-template: reference', 'status: success', '---', '## jafax markdown'].join('\n');
       }
 
       if (filePath === '/in/jafax.html') {
@@ -70,11 +74,11 @@ describe('generateSummary', () => {
 
     expect(writeTextFileMock).toHaveBeenCalledWith(
       '/out/custom-summary.html',
-      expect.stringContaining('<h2>Overview</h2>\n    <ul><li>jafax</li></ul>')
+      expect.stringContaining('<h2>Overview</h2>\n    <ul><li>jafax (success)</li></ul>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       '/out/custom-summary.md',
-      '# Voyager Summary\n\n## Overview\n- jafax\n\n## jafax\n## jafax markdown'
+      expect.stringContaining('## Overview\n- jafax (success)')
     );
     expect(result.writtenHtmlPath).toBe('/out/custom-summary.html');
     expect(result.writtenMdPath).toBe('/out/custom-summary.md');
@@ -83,13 +87,13 @@ describe('generateSummary', () => {
   it('returns parsedToolsCount for multiple parsed summaries', async () => {
     readTextFileMock.mockImplementation(async (filePath: string) => {
       if (filePath === '/in/insider.md') {
-        return ['---', 'tool: insider', 'html-template: inline', '---', '<div>insider</div>', '---', '# insider'].join(
+        return ['---', 'tool: insider', 'html-template: inline', 'status: success', '---', '<div>insider</div>', '---', '# insider'].join(
           '\n'
         );
       }
 
       if (filePath === '/in/lizard.md') {
-        return ['---', 'tool: lizard', 'html-template: inline', '---', '<div>lizard</div>', '---', '# lizard'].join('\n');
+        return ['---', 'tool: lizard', 'html-template: inline', 'status: success', '---', '<div>lizard</div>', '---', '# lizard'].join('\n');
       }
 
       throw new Error(`Unexpected file path: ${filePath}`);
@@ -107,11 +111,44 @@ describe('generateSummary', () => {
     expect(result.parsedToolsCount).toBe(2);
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<h2>Overview</h2>\n    <ul><li>insider</li><li>lizard</li></ul>')
+      expect.stringContaining('<h2>Overview</h2>\n    <ul><li>insider (success)</li><li>lizard (success)</li></ul>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.md',
-      '# Voyager Summary\n\n## Overview\n- insider\n- lizard\n\n## insider\n# insider\n\n## lizard\n# lizard'
+      expect.stringContaining('## Overview\n- insider (success)\n- lizard (success)')
+    );
+  });
+
+  it('continues when a tool summary cannot be parsed', async () => {
+    readTextFileMock.mockImplementation(async (filePath: string) => {
+      if (filePath === '/in/insider.md') {
+        return ['---', 'tool: insider', 'html-template: inline', 'status: success', '---', '<div>insider</div>', '---', '# insider'].join(
+          '\n'
+        );
+      }
+
+      if (filePath === '/in/bad.md') {
+        return 'invalid-content';
+      }
+
+      throw new Error(`Unexpected file path: ${filePath}`);
+    });
+
+    const result = await generateSummary({
+      toolMd: [
+        ['insider', '/in/insider.md'],
+        ['jafax', '/in/bad.md']
+      ],
+      toolHtml: [],
+      conditions: []
+    });
+
+    expect(result.parsedToolsCount).toBe(1);
+    expect(result.parseWarnings).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('Unable to parse jafax summary from /in/bad.md'),
+        expect.stringContaining("Skipped rule 'lizard-failed' due to missing metadata values")
+      ])
     );
   });
 });

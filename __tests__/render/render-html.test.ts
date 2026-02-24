@@ -14,7 +14,25 @@ function makeParsedTool(tool: string, htmlTemplateContent: string, markdownConte
 
 describe('renderHtmlSummary', () => {
   it('renders document shell and overview list', () => {
-    const overview: SummaryOverview = { toolNames: ['insider', 'jafax'] };
+    const overview: SummaryOverview = {
+      toolNames: ['insider', 'jafax'],
+      toolStatuses: { insider: 'success', jafax: 'failed' },
+      diagnostics: [
+        {
+          severity: 'error',
+          code: 'jafax-failed',
+          message: 'jafax failed',
+          triggeredBy: ['jafax']
+        }
+      ],
+      conditionWarnings: [],
+      health: {
+        status: 'error',
+        criticalCount: 0,
+        errorCount: 1,
+        warningCount: 0
+      }
+    };
     const parsedTools: ParsedToolSummary[] = [makeParsedTool('insider', '<article>insider-template</article>')];
 
     const output = renderHtmlSummary(overview, parsedTools);
@@ -22,11 +40,23 @@ describe('renderHtmlSummary', () => {
     expect(output).toContain('<!doctype html>');
     expect(output).toContain('<html lang="en">');
     expect(output).toContain('<h2>Overview</h2>');
-    expect(output).toContain('<ul><li>insider</li><li>jafax</li></ul>');
+    expect(output).toContain('<ul><li>insider (success)</li><li>jafax (failed)</li></ul>');
+    expect(output).toContain('<h2>Diagnostics</h2>');
   });
 
   it('renders tool sections in received order with html content', () => {
-    const overview: SummaryOverview = { toolNames: ['insider', 'lizard'] };
+    const overview: SummaryOverview = {
+      toolNames: ['insider', 'lizard'],
+      toolStatuses: { insider: 'success', lizard: 'success' },
+      diagnostics: [],
+      conditionWarnings: [],
+      health: {
+        status: 'info',
+        criticalCount: 0,
+        errorCount: 0,
+        warningCount: 0
+      }
+    };
     const parsedTools: ParsedToolSummary[] = [
       makeParsedTool('insider', '<div id="insider">insider</div>'),
       makeParsedTool('lizard', '<div id="lizard">lizard</div>')
@@ -43,11 +73,22 @@ describe('renderHtmlSummary', () => {
   });
 
   it('renders empty tool section area when no parsed tools are provided', () => {
-    const overview: SummaryOverview = { toolNames: ['insider'] };
+    const overview: SummaryOverview = {
+      toolNames: ['insider'],
+      toolStatuses: { insider: 'unknown' },
+      diagnostics: [],
+      conditionWarnings: [],
+      health: {
+        status: 'info',
+        criticalCount: 0,
+        errorCount: 0,
+        warningCount: 0
+      }
+    };
 
     const output = renderHtmlSummary(overview, []);
 
-    expect(output).toContain('<ul><li>insider</li></ul>');
+    expect(output).toContain('<ul><li>insider (unknown)</li></ul>');
     expect(output).not.toContain('<section><h2>insider</h2>');
   });
 });

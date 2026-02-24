@@ -3,6 +3,8 @@ import { parseToolSummaryMarkdown, ParsedToolSummary } from '../parsers/parse-to
 import { renderMarkdownSummary } from '../render/render-markdown';
 import { renderHtmlSummary } from '../render/render-html';
 import { buildOverview } from './build-overview';
+import { resolveConditions } from './resolve-conditions';
+import { ResolvedConditions } from './summary-types';
 
 const DEFAULT_OUT_HTML = 'summary.html';
 const DEFAULT_OUT_MD = 'summary.md';
@@ -20,26 +22,31 @@ export interface GenerateSummaryInput {
 
 export interface GenerateSummaryResult {
   parsedToolsCount: number;
+  parseWarnings: string[];
   writtenHtmlPath?: string;
   writtenMdPath?: string;
 }
 
 export async function generateSummary(input: GenerateSummaryInput): Promise<GenerateSummaryResult> {
-  const parsedTools = await parseToolSummaries(input.toolMd, input.toolHtml);
+  const conditions = await resolveConditions(input.conditionsFile, input.conditions);
+  const parsed = await parseToolSummaries(input.toolMd, input.toolHtml);
+  const parsedTools = parsed.parsedTools;
   const orderedTools = orderTools(parsedTools);
-  const content = buildReportContent(orderedTools);
+  const content = buildReportContent(orderedTools, conditions);
   const resolvedOutHtml = input.outHtml ?? DEFAULT_OUT_HTML;
   const resolvedOutMd = input.outMd ?? DEFAULT_OUT_MD;
   const writtenPaths = await persistOutputs(content, resolvedOutHtml, resolvedOutMd);
 
   return {
     parsedToolsCount: parsedTools.length,
+    parseWarnings: [...parsed.warnings, ...content.overviewWarnings],
     writtenHtmlPath: writtenPaths.writtenHtmlPath,
     writtenMdPath: writtenPaths.writtenMdPath
   };
 }
 
 interface ReportContent {
+  overviewWarnings: string[];
   html?: string;
   markdown?: string;
 }
@@ -49,39 +56,57 @@ interface PersistedOutputPaths {
   writtenMdPath?: string;
 }
 
+interface ParsedToolSummariesResult {
+  parsedTools: ParsedToolSummary[];
+  warnings: string[];
+}
+
 async function parseToolSummaries(
   toolMd: Array<[string, string]>,
   toolHtml: Array<[string, string]>
-): Promise<ParsedToolSummary[]> {
+): Promise<ParsedToolSummariesResult> {
   const htmlByTool = new Map<string, string>(toolHtml);
   const parsedTools: ParsedToolSummary[] = [];
+  const warnings: string[] = [];
 
   for (const [tool, mdPath] of toolMd) {
-    const markdownRaw = await readTextFile(mdPath);
+    try {
+      const markdownRaw = await readTextFile(mdPath);
 
-    const htmlReferencePath = htmlByTool.get(tool);
-    const htmlTemplateReferenceContent = htmlReferencePath ? await readTextFile(htmlReferencePath) : undefined;
+      const htmlReferencePath = htmlByTool.get(tool);
+      const htmlTemplateReferenceContent = htmlReferencePath ? await readTextFile(htmlReferencePath) : undefined;
 
-    parsedTools.push(
-      parseToolSummaryMarkdown({
-        tool,
-        filePath: mdPath,
-        content: markdownRaw,
-        htmlTemplateReferenceContent
-      })
-    );
+      parsedTools.push(
+        parseToolSummaryMarkdown({
+          tool,
+          filePath: mdPath,
+          content: markdownRaw,
+          htmlTemplateReferenceContent
+        })
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      warnings.push(`Unable to parse ${tool} summary from ${mdPath}: ${message}`);
+    }
   }
 
-  return parsedTools;
+  return {
+    parsedTools,
+    warnings
+  };
 }
 
-function buildReportContent(parsedTools: ParsedToolSummary[]): ReportContent {
-  const overview = buildOverview(parsedTools);
+function buildReportContent(
+  parsedTools: ParsedToolSummary[],
+  conditions: ResolvedConditions
+): ReportContent {
+  const overview = buildOverview(parsedTools, conditions);
 
   const markdown = renderMarkdownSummary(overview, parsedTools);
   const html = renderHtmlSummary(overview, parsedTools);
 
   return {
+    overviewWarnings: overview.conditionWarnings,
     html: html || undefined,
     markdown: markdown || undefined
   };
