@@ -119,6 +119,88 @@ describe('generateSummary', () => {
     );
   });
 
+  it('applies external tool order and appends tools missing from file order', async () => {
+    readTextFileMock.mockImplementation(async (filePath: string) => {
+      if (filePath === '/in/tool-order.txt') {
+        return ['jafax: 10', 'insider: 20'].join('\n');
+      }
+
+      if (filePath === '/in/jafax.md') {
+        return ['---', 'tool: jafax', 'html-template: inline', 'status: success', '---', '<div>jafax</div>', '---', '# jafax'].join(
+          '\n'
+        );
+      }
+
+      if (filePath === '/in/insider.md') {
+        return ['---', 'tool: insider', 'html-template: inline', 'status: success', '---', '<div>insider</div>', '---', '# insider'].join(
+          '\n'
+        );
+      }
+
+      if (filePath === '/in/lizard.md') {
+        return ['---', 'tool: lizard', 'html-template: inline', 'status: success', '---', '<div>lizard</div>', '---', '# lizard'].join(
+          '\n'
+        );
+      }
+
+      throw new Error(`Unexpected file path: ${filePath}`);
+    });
+
+    const result = await generateSummary({
+      toolMd: [
+        ['lizard', '/in/lizard.md'],
+        ['insider', '/in/insider.md'],
+        ['jafax', '/in/jafax.md']
+      ],
+      toolHtml: [],
+      toolOrderFile: '/in/tool-order.txt',
+      conditions: []
+    });
+
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      expect.stringContaining('## Overview\n- jafax (success)\n- insider (success)\n- lizard (success)')
+    );
+    expect(result.parseWarnings).toEqual(
+      expect.arrayContaining([expect.stringContaining('Appended tools not present in ordering list: lizard')])
+    );
+  });
+
+  it('appends tools missing from default order', async () => {
+    readTextFileMock.mockImplementation(async (filePath: string) => {
+      if (filePath === '/in/insider.md') {
+        return ['---', 'tool: insider', 'html-template: inline', 'status: success', '---', '<div>insider</div>', '---', '# insider'].join(
+          '\n'
+        );
+      }
+
+      if (filePath === '/in/new-tool.md') {
+        return ['---', 'tool: new-tool', 'html-template: inline', 'status: success', '---', '<div>new-tool</div>', '---', '# new-tool'].join(
+          '\n'
+        );
+      }
+
+      throw new Error(`Unexpected file path: ${filePath}`);
+    });
+
+    const result = await generateSummary({
+      toolMd: [
+        ['new-tool', '/in/new-tool.md'],
+        ['insider', '/in/insider.md']
+      ],
+      toolHtml: [],
+      conditions: []
+    });
+
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      expect.stringContaining('## Overview\n- insider (success)\n- new-tool (success)')
+    );
+    expect(result.parseWarnings).toEqual(
+      expect.arrayContaining([expect.stringContaining('Appended tools not present in ordering list: new-tool')])
+    );
+  });
+
   it('continues when a tool summary cannot be parsed', async () => {
     readTextFileMock.mockImplementation(async (filePath: string) => {
       if (filePath === '/in/insider.md') {

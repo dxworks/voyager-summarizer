@@ -4,11 +4,12 @@ import { renderMarkdownSummary } from '../render/render-markdown';
 import { renderHtmlSummary } from '../render/render-html';
 import { buildOverview } from './build-overview';
 import { resolveConditions } from './resolve-conditions';
+import { readToolOrder } from './read-tool-order';
 import { ResolvedConditions } from './summary-types';
 
 const DEFAULT_OUT_HTML = 'summary.html';
 const DEFAULT_OUT_MD = 'summary.md';
-const TOOL_ORDER = ['depminer', 'dude', 'honeydew', 'insider', 'inspector-git', 'jafax', 'lizard'];
+const DEFAULT_TOOL_ORDER = ['depminer', 'dude', 'honeydew', 'insider', 'inspector-git', 'jafax', 'lizard'];
 
 export interface GenerateSummaryInput {
   inputDir?: string;
@@ -16,6 +17,7 @@ export interface GenerateSummaryInput {
   toolHtml: Array<[string, string]>;
   conditionsFile?: string;
   conditions: Array<[string, string]>;
+  toolOrderFile?: string;
   outHtml?: string;
   outMd?: string;
 }
@@ -31,15 +33,16 @@ export async function generateSummary(input: GenerateSummaryInput): Promise<Gene
   const conditions = await resolveConditions(input.conditionsFile, input.conditions);
   const parsed = await parseToolSummaries(input.toolMd, input.toolHtml);
   const parsedTools = parsed.parsedTools;
-  const orderedTools = orderTools(parsedTools);
-  const content = buildReportContent(orderedTools, conditions);
+  const toolOrder = input.toolOrderFile ? await readToolOrder(input.toolOrderFile) : DEFAULT_TOOL_ORDER;
+  const ordering = orderTools(parsedTools, toolOrder);
+  const content = buildReportContent(ordering.orderedTools, conditions);
   const resolvedOutHtml = input.outHtml ?? DEFAULT_OUT_HTML;
   const resolvedOutMd = input.outMd ?? DEFAULT_OUT_MD;
   const writtenPaths = await persistOutputs(content, resolvedOutHtml, resolvedOutMd);
 
   return {
     parsedToolsCount: parsedTools.length,
-    parseWarnings: [...parsed.warnings, ...content.overviewWarnings],
+    parseWarnings: [...parsed.warnings, ...ordering.warnings, ...content.overviewWarnings],
     writtenHtmlPath: writtenPaths.writtenHtmlPath,
     writtenMdPath: writtenPaths.writtenMdPath
   };
@@ -58,6 +61,11 @@ interface PersistedOutputPaths {
 
 interface ParsedToolSummariesResult {
   parsedTools: ParsedToolSummary[];
+  warnings: string[];
+}
+
+interface OrderToolsResult {
+  orderedTools: ParsedToolSummary[];
   warnings: string[];
 }
 
@@ -112,19 +120,38 @@ function buildReportContent(
   };
 }
 
-function orderTools(parsedTools: ParsedToolSummary[]): ParsedToolSummary[] {
+function orderTools(parsedTools: ParsedToolSummary[], toolOrder: string[]): OrderToolsResult {
   const toolsByName = new Map(parsedTools.map((tool) => [tool.tool, tool]));
   const ordered: ParsedToolSummary[] = [];
+  const includedTools = new Set<string>();
+  const appendedTools: string[] = [];
 
-  for (const toolName of TOOL_ORDER) {
+  for (const toolName of toolOrder) {
     const tool = toolsByName.get(toolName);
 
     if (tool) {
       ordered.push(tool);
+      includedTools.add(tool.tool);
     }
   }
 
-  return ordered;
+  for (const parsedTool of parsedTools) {
+    if (!includedTools.has(parsedTool.tool)) {
+      ordered.push(parsedTool);
+      appendedTools.push(parsedTool.tool);
+      includedTools.add(parsedTool.tool);
+    }
+  }
+
+  const warnings: string[] = [];
+  if (appendedTools.length > 0) {
+    warnings.push(`Appended tools not present in ordering list: ${appendedTools.join(', ')}`);
+  }
+
+  return {
+    orderedTools: ordered,
+    warnings
+  };
 }
 
 async function persistOutputs(

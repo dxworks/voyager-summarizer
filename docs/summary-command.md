@@ -19,6 +19,7 @@ node dist/src/summarizer.js summary [options]
 
 - `--tool-md <tool>=<path>`: map a tool to a Markdown summary file (repeatable)
 - `--tool-html <tool>=<path>`: map a tool to an HTML summary file (repeatable)
+- `--tool-order-file <path>`: file defining tool order as `<tool>: <priority>`
 - `--conditions-file <path>`: JSON file containing condition rules
 - `--condition <rules.<id>.<field>=value>`: CLI rule override (repeatable)
 
@@ -58,6 +59,29 @@ Supported `severity` values:
 
 If any variable cannot be resolved, the rule is skipped and a warning is emitted.
 
+## Tool Order File Format
+
+Tool order can be configured at runtime with `--tool-order-file`.
+
+```text
+# lower number means earlier in the report
+insider: 10
+jafax: 20
+lizard: 30
+```
+
+Rules:
+
+- blank lines and lines starting with `#` are ignored
+- tool ids must be unique
+- priority must be numeric
+
+Ordering behavior:
+
+- tools present in the order file are rendered first by ascending priority
+- tools missing from the order file are still kept and appended afterward in arrival order
+- without `--tool-order-file`, built-in default order is used first, then unknown tools are appended
+
 ## Variable Resolution
 
 The summarizer builds a context using tool metadata:
@@ -85,6 +109,11 @@ voyager-summarizer summary \
 voyager-summarizer summary \
   --tool-md insider=./examples/test-summaries/insider-java-heavy-test-summary.md \
   --tool-md jafax=./examples/test-summaries/jafax-test-summary.md \
+  --tool-order-file ./examples/tool-order.txt \
   --out-html ./examples/out/summary-jafax-test.html \
   --out-md ./examples/out/summary-jafax-test.md
 ```
+
+Repository example file:
+
+- `examples/tool-order.txt`
