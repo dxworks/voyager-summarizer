@@ -10,6 +10,7 @@ export function renderHtmlSummary(overview: SummaryOverview, parsedTools: Parsed
       ? '<li>No diagnostics triggered</li>'
       : overview.diagnostics.map((item) => `<li>[${item.severity}] ${item.message}</li>`).join('');
   const toolSections = parsedTools
+    .filter((tool) => tool.htmlTemplateAvailable)
     .map((tool) => `<section><h2>${tool.tool}</h2>${tool.htmlTemplateContent}</section>`)
     .join('');
 

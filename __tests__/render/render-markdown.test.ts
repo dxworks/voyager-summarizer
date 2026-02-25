@@ -8,6 +8,7 @@ function makeParsedTool(tool: string, markdownContent: string, htmlTemplateConte
     metadata: { 'html-template': 'inline' },
     htmlTemplateMode: 'inline',
     htmlTemplateContent,
+    htmlTemplateAvailable: true,
     markdownContent
   };
 }

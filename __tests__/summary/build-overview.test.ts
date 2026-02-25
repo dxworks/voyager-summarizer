@@ -25,6 +25,7 @@ describe('buildOverview', () => {
         metadata: { 'html-template': 'inline', status: 'success' },
         htmlTemplateMode: 'inline',
         htmlTemplateContent: '<div>insider</div>',
+        htmlTemplateAvailable: true,
         markdownContent: '# insider'
       },
       {
@@ -32,6 +33,7 @@ describe('buildOverview', () => {
         metadata: { 'html-template': 'inline', status: 'failed' },
         htmlTemplateMode: 'inline',
         htmlTemplateContent: '<div>lizard</div>',
+        htmlTemplateAvailable: true,
         markdownContent: '# lizard'
       }
     ];

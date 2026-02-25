@@ -37,6 +37,7 @@ function makeParsedTool(tool: string, metadata: Record<string, string>): ParsedT
     },
     htmlTemplateMode: 'inline',
     htmlTemplateContent: `<div>${tool}</div>`,
+    htmlTemplateAvailable: true,
     markdownContent: `# ${tool}`
   };
 }

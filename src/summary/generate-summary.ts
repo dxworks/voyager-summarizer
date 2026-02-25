@@ -12,7 +12,6 @@ const DEFAULT_OUT_MD = 'summary.md';
 const DEFAULT_TOOL_ORDER = ['depminer', 'dude', 'honeydew', 'insider', 'inspector-git', 'jafax', 'lizard'];
 
 export interface GenerateSummaryInput {
-  inputDir?: string;
   toolMd: Array<[string, string]>;
   toolHtml: Array<[string, string]>;
   conditionsFile?: string;
@@ -73,7 +72,11 @@ async function parseToolSummaries(
   toolMd: Array<[string, string]>,
   toolHtml: Array<[string, string]>
 ): Promise<ParsedToolSummariesResult> {
-  const htmlByTool = new Map<string, string>(toolHtml);
+  const htmlByTool = new Map<string, string>(
+    toolHtml
+      .map(([tool, filePath]) => [tool, normalizeOptionalPath(filePath)] as [string, string])
+      .filter(([, filePath]) => filePath.length > 0)
+  );
   const parsedTools: ParsedToolSummary[] = [];
   const warnings: string[] = [];
 
@@ -92,6 +95,13 @@ async function parseToolSummaries(
           htmlTemplateReferenceContent
         })
       );
+
+      const parsedTool = parsedTools[parsedTools.length - 1];
+      if (parsedTool.htmlTemplateMode === 'reference' && !parsedTool.htmlTemplateAvailable) {
+        warnings.push(
+          `Missing HTML template reference for ${tool}; skipping this tool section from the HTML report`
+        );
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       warnings.push(`Unable to parse ${tool} summary from ${mdPath}: ${message}`);
@@ -102,6 +112,21 @@ async function parseToolSummaries(
     parsedTools,
     warnings
   };
+}
+
+function normalizeOptionalPath(filePath: string): string {
+  const normalized = filePath.trim();
+
+  if (normalized.length === 0) {
+    return '';
+  }
+
+  const lowerCased = normalized.toLowerCase();
+  if (lowerCased === 'null' || lowerCased === 'undefined') {
+    return '';
+  }
+
+  return normalized;
 }
 
 function buildReportContent(

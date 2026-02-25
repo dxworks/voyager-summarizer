@@ -11,7 +11,6 @@ program
 program
   .command('summary')
   .description('Generate consolidated summary from tool outputs')
-  .option('-i, --input-dir <path d="">', 'Folder containing tool summary files')
   .option('-m, --tool-md <name=path>', 'Tool name to Markdown file mapping (repeatable)', collectKeyValue, [])
   .option('-h, --tool-html <name=path>', 'Tool name to HTML file mapping (repeatable)', collectKeyValue, [])
   .option('--tool-order-file <path d="">', 'File with tool ordering rules (<tool>: <priority>)')
@@ -23,7 +22,6 @@ program
     console.log('summarized');
 
     const result = await generateSummary({
-      inputDir: options.inputDir,
       toolMd: options.toolMd,
       toolHtml: options.toolHtml,
       toolOrderFile: options.toolOrderFile,

@@ -2,12 +2,18 @@ import { renderHtmlSummary } from '../../src/render/render-html';
 import { ParsedToolSummary } from '../../src/parsers/parse-tool-summary-md';
 import { SummaryOverview } from '../../src/summary/build-overview';
 
-function makeParsedTool(tool: string, htmlTemplateContent: string, markdownContent = `# ${tool}`): ParsedToolSummary {
+function makeParsedTool(
+  tool: string,
+  htmlTemplateContent: string,
+  markdownContent = `# ${tool}`,
+  htmlTemplateAvailable = true
+): ParsedToolSummary {
   return {
     tool,
     metadata: { 'html-template': 'inline' },
     htmlTemplateMode: 'inline',
     htmlTemplateContent,
+    htmlTemplateAvailable,
     markdownContent
   };
 }
@@ -90,5 +96,32 @@ describe('renderHtmlSummary', () => {
 
     expect(output).toContain('<ul><li>insider (unknown)</li></ul>');
     expect(output).not.toContain('<section><h2>insider</h2>');
+  });
+
+  it('skips tools with unavailable html templates', () => {
+    const overview: SummaryOverview = {
+      toolNames: ['jafax', 'lizard', 'insider'],
+      toolStatuses: { jafax: 'success', lizard: 'success', insider: 'success' },
+      diagnostics: [],
+      conditionWarnings: [],
+      health: {
+        status: 'info',
+        criticalCount: 0,
+        errorCount: 0,
+        warningCount: 0
+      }
+    };
+
+    const parsedTools: ParsedToolSummary[] = [
+      makeParsedTool('jafax', '<div id="jafax">jafax</div>'),
+      makeParsedTool('lizard', '', '# lizard', false),
+      makeParsedTool('insider', '<div id="insider">insider</div>')
+    ];
+
+    const output = renderHtmlSummary(overview, parsedTools);
+
+    expect(output).toContain('<section><h2>jafax</h2><div id="jafax">jafax</div></section>');
+    expect(output).toContain('<section><h2>insider</h2><div id="insider">insider</div></section>');
+    expect(output).not.toContain('<section><h2>lizard</h2>');
   });
 });

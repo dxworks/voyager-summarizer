@@ -6,7 +6,7 @@ conditions, and generates consolidated HTML and Markdown reports.
 ## Usage
 
 ```bash
-voyager-summarizer summary [options]
+voyager-summarizer summary []
 ```
 
 If using compiled output directly:

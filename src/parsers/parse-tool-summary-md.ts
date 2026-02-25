@@ -5,6 +5,7 @@ export interface ParsedToolSummary {
   metadata: Record<string, string>;
   htmlTemplateMode: HtmlTemplateMode;
   htmlTemplateContent: string;
+  htmlTemplateAvailable: boolean;
   markdownContent: string;
 }
 
@@ -49,6 +50,7 @@ export function parseToolSummaryMarkdown(input: ParseToolSummaryMarkdownInput): 
       metadata,
       htmlTemplateMode: 'inline',
       htmlTemplateContent: sections[1],
+      htmlTemplateAvailable: true,
       markdownContent: sections[2]
     };
   }
@@ -57,17 +59,12 @@ export function parseToolSummaryMarkdown(input: ParseToolSummaryMarkdownInput): 
     throw new Error(`Missing markdown section for ${input.tool} in ${input.filePath}`);
   }
 
-  if (!input.htmlTemplateReferenceContent) {
-    throw new Error(
-      `Missing --tool-html-template for ${input.tool} while summary declares html-template: reference`
-    );
-  }
-
   return {
     tool: input.tool,
     metadata,
     htmlTemplateMode: 'reference',
-    htmlTemplateContent: input.htmlTemplateReferenceContent,
+    htmlTemplateContent: input.htmlTemplateReferenceContent ?? '',
+    htmlTemplateAvailable: Boolean(input.htmlTemplateReferenceContent),
     markdownContent: sections[1]
   };
 }

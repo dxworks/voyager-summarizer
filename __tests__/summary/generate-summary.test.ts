@@ -233,4 +233,51 @@ describe('generateSummary', () => {
       ])
     );
   });
+
+  it('skips html section for reference mode when html template is missing', async () => {
+    readTextFileMock.mockImplementation(async (filePath: string) => {
+      if (filePath === '/in/jafax.md') {
+        return ['---', 'tool: jafax', 'html-template: inline', 'status: success', '---', '<div>jafax</div>', '---', '# jafax'].join(
+          '\n'
+        );
+      }
+
+      if (filePath === '/in/lizard.md') {
+        return ['---', 'tool: lizard', 'html-template: reference', 'status: success', '---', '# lizard'].join('\n');
+      }
+
+      if (filePath === '/in/insider.md') {
+        return ['---', 'tool: insider', 'html-template: inline', 'status: success', '---', '<div>insider</div>', '---', '# insider'].join(
+          '\n'
+        );
+      }
+
+      throw new Error(`Unexpected file path: ${filePath}`);
+    });
+
+    const result = await generateSummary({
+      toolMd: [
+        ['jafax', '/in/jafax.md'],
+        ['lizard', '/in/lizard.md'],
+        ['insider', '/in/insider.md']
+      ],
+      toolHtml: [['lizard', 'null']],
+      conditions: []
+    });
+
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.html',
+      expect.stringContaining('<section><h2>jafax</h2><div>jafax</div></section>')
+    );
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.html',
+      expect.stringContaining('<section><h2>insider</h2><div>insider</div></section>')
+    );
+    expect(writeTextFileMock).toHaveBeenCalledWith('summary.html', expect.not.stringContaining('<section><h2>lizard</h2>'));
+    expect(result.parseWarnings).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('Missing HTML template reference for lizard; skipping this tool section from the HTML report')
+      ])
+    );
+  });
 });

@@ -24,6 +24,7 @@ describe('parseToolSummaryMarkdown', () => {
     expect(result.tool).toBe('insider');
     expect(result.htmlTemplateMode).toBe('inline');
     expect(result.htmlTemplateContent).toBe('<section>Inline Template</section>');
+    expect(result.htmlTemplateAvailable).toBe(true);
     expect(result.markdownContent).toBe('## Markdown Contribution\nSome details here.');
     expect(result.metadata['severity']).toBe('medium');
     expect(result.metadata['title']).toBe('Insider Results');
@@ -48,6 +49,7 @@ describe('parseToolSummaryMarkdown', () => {
 
     expect(result.htmlTemplateMode).toBe('reference');
     expect(result.htmlTemplateContent).toBe('<article>External Template</article>');
+    expect(result.htmlTemplateAvailable).toBe(true);
     expect(result.markdownContent).toBe('## Jafax Markdown\nReference mode text');
   });
 
@@ -112,16 +114,18 @@ describe('parseToolSummaryMarkdown', () => {
     ).toThrow('Missing metadata section in jafax summary: /tmp/jafax.md');
   });
 
-  it('throws when reference mode template content is missing', () => {
+  it('keeps parsing when reference mode template content is missing', () => {
     const content = ['---', 'tool: jafax', 'html-template: reference', '---', '## Markdown'].join('\n');
 
-    expect(() =>
-      parseToolSummaryMarkdown({
-        tool: 'jafax',
-        filePath: '/tmp/jafax.md',
-        content
-      })
-    ).toThrow('Missing --tool-html-template for jafax while summary declares html-template: reference');
+    const result = parseToolSummaryMarkdown({
+      tool: 'jafax',
+      filePath: '/tmp/jafax.md',
+      content
+    });
+
+    expect(result.htmlTemplateMode).toBe('reference');
+    expect(result.htmlTemplateContent).toBe('');
+    expect(result.htmlTemplateAvailable).toBe(false);
   });
 
   it('throws for invalid metadata line format', () => {
