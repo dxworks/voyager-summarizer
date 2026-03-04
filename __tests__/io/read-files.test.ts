@@ -23,6 +23,15 @@ describe('read-files io helpers', () => {
     expect(content).toBe('line one\nline two');
   });
 
+  it('creates missing parent directories when writing files', async () => {
+    const filePath = join(tempDir, 'nested', 'reports', 'summary.md');
+
+    await writeTextFile(filePath, '# summary');
+    const content = await readTextFile(filePath);
+
+    expect(content).toBe('# summary');
+  });
+
   it('returns true for existing readable files', async () => {
     const filePath = join(tempDir, 'existing.txt');
 
