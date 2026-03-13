@@ -45,9 +45,11 @@ describe('renderHtmlSummary', () => {
 
     expect(output).toContain('<!doctype html>');
     expect(output).toContain('<html lang="en">');
+    expect(output).toContain('<style>');
     expect(output).toContain('<h2>Overview</h2>');
-    expect(output).toContain('<ul><li>insider (success)</li><li>jafax (failed)</li></ul>');
+    expect(output).toContain('<ul class="overview-list"><li class="overview-item"><span class="tool-name">insider</span><span class="status-pill status-success">success</span></li><li class="overview-item"><span class="tool-name">jafax</span><span class="status-pill status-failed">failed</span></li></ul>');
     expect(output).toContain('<h2>Diagnostics</h2>');
+    expect(output).toContain('<span class="diagnostic-severity">error</span>');
   });
 
   it('renders tool sections in received order with html content', () => {
@@ -70,8 +72,8 @@ describe('renderHtmlSummary', () => {
 
     const output = renderHtmlSummary(overview, parsedTools);
 
-    const insiderPos = output.indexOf('<section><h2>insider</h2><div id="insider">insider</div></section>');
-    const lizardPos = output.indexOf('<section><h2>lizard</h2><div id="lizard">lizard</div></section>');
+    const insiderPos = output.indexOf('<section class="summary-card tool-card"><h2>insider</h2><div class="tool-content"><div id="insider">insider</div></div></section>');
+    const lizardPos = output.indexOf('<section class="summary-card tool-card"><h2>lizard</h2><div class="tool-content"><div id="lizard">lizard</div></div></section>');
 
     expect(insiderPos).toBeGreaterThan(-1);
     expect(lizardPos).toBeGreaterThan(-1);
@@ -94,8 +96,8 @@ describe('renderHtmlSummary', () => {
 
     const output = renderHtmlSummary(overview, []);
 
-    expect(output).toContain('<ul><li>insider (unknown)</li></ul>');
-    expect(output).not.toContain('<section><h2>insider</h2>');
+    expect(output).toContain('<span class="tool-name">insider</span><span class="status-pill status-unknown">unknown</span>');
+    expect(output).not.toContain('<section class="summary-card tool-card"><h2>insider</h2>');
   });
 
   it('skips tools with unavailable html templates', () => {
@@ -120,8 +122,8 @@ describe('renderHtmlSummary', () => {
 
     const output = renderHtmlSummary(overview, parsedTools);
 
-    expect(output).toContain('<section><h2>jafax</h2><div id="jafax">jafax</div></section>');
-    expect(output).toContain('<section><h2>insider</h2><div id="insider">insider</div></section>');
-    expect(output).not.toContain('<section><h2>lizard</h2>');
+    expect(output).toContain('<section class="summary-card tool-card"><h2>jafax</h2><div class="tool-content"><div id="jafax">jafax</div></div></section>');
+    expect(output).toContain('<section class="summary-card tool-card"><h2>insider</h2><div class="tool-content"><div id="insider">insider</div></div></section>');
+    expect(output).not.toContain('<section class="summary-card tool-card"><h2>lizard</h2>');
   });
 });

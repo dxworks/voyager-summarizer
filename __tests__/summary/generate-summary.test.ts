@@ -37,7 +37,7 @@ describe('generateSummary', () => {
 
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<h2>Overview</h2>\n    <ul><li>insider (success)</li></ul>')
+      expect.stringContaining('<ul class="overview-list"><li class="overview-item"><span class="tool-name">insider</span><span class="status-pill status-success">success</span></li></ul>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.md',
@@ -74,7 +74,7 @@ describe('generateSummary', () => {
 
     expect(writeTextFileMock).toHaveBeenCalledWith(
       '/out/custom-summary.html',
-      expect.stringContaining('<h2>Overview</h2>\n    <ul><li>jafax (success)</li></ul>')
+      expect.stringContaining('<ul class="overview-list"><li class="overview-item"><span class="tool-name">jafax</span><span class="status-pill status-success">success</span></li></ul>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       '/out/custom-summary.md',
@@ -111,7 +111,7 @@ describe('generateSummary', () => {
     expect(result.parsedToolsCount).toBe(2);
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<h2>Overview</h2>\n    <ul><li>insider (success)</li><li>lizard (success)</li></ul>')
+      expect.stringContaining('<ul class="overview-list"><li class="overview-item"><span class="tool-name">insider</span><span class="status-pill status-success">success</span></li><li class="overview-item"><span class="tool-name">lizard</span><span class="status-pill status-success">success</span></li></ul>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.md',
@@ -267,13 +267,16 @@ describe('generateSummary', () => {
 
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<section><h2>jafax</h2><div>jafax</div></section>')
+      expect.stringContaining('<section class="summary-card tool-card"><h2>jafax</h2><div class="tool-content"><div>jafax</div></div></section>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<section><h2>insider</h2><div>insider</div></section>')
+      expect.stringContaining('<section class="summary-card tool-card"><h2>insider</h2><div class="tool-content"><div>insider</div></div></section>')
     );
-    expect(writeTextFileMock).toHaveBeenCalledWith('summary.html', expect.not.stringContaining('<section><h2>lizard</h2>'));
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.html',
+      expect.not.stringContaining('<section class="summary-card tool-card"><h2>lizard</h2>')
+    );
     expect(result.parseWarnings).toEqual(
       expect.arrayContaining([
         expect.stringContaining('Missing HTML template reference for lizard; skipping this tool section from the HTML report')

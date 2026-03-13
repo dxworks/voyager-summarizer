@@ -164,4 +164,42 @@ describe('parseToolSummaryMarkdown', () => {
     expect(result.metadata['owner']).toBe('team-a');
     expect(result.metadata['custom-flag']).toBe('true');
   });
+
+  it('parses grouped metadata entries under metadata block', () => {
+    const content = [
+      '---',
+      'tool: inspector-git',
+      'html-template: reference',
+      'status: partial',
+      'metadata:',
+      '  repositories.count: 2',
+      '  iglog.files: 0',
+      '  gitlog.files: 2',
+      '  commits.total: 5838',
+      '  authors.total: 15',
+      '  commits.first.date: 2018-07-20T14:24:34.000Z',
+      '  commits.last.date: 2026-01-15T10:51:00.000Z',
+      '  warnings.count: 0',
+      '  generated.at: 2026-03-06T09:02:18.798Z',
+      '---',
+      '## Inspector Git',
+      '',
+      '- Status: partial'
+    ].join('\n');
+
+    const result = parseToolSummaryMarkdown({
+      tool: 'inspector-git',
+      filePath: '/tmp/inspector-git.md',
+      content,
+      htmlTemplateReferenceContent: '<section>Inspector Git</section>'
+    });
+
+    expect(result.htmlTemplateMode).toBe('reference');
+    expect(result.metadata['status']).toBe('partial');
+    expect(result.metadata['repositories.count']).toBe('2');
+    expect(result.metadata['gitlog.files']).toBe('2');
+    expect(result.metadata['commits.total']).toBe('5838');
+    expect(result.metadata['warnings.count']).toBe('0');
+    expect(result.metadata['generated.at']).toBe('2026-03-06T09:02:18.798Z');
+  });
 });
