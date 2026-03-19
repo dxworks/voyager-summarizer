@@ -24,9 +24,10 @@
     "node": ">=24.13.0 <26"
   },
   "scripts": {
-    "build": "npm run clean && tsc -p tsconfig.build.json",
-    "build:bundle": "npm run build && esbuild dist/src/summarizer.js --bundle --platform=node --format=cjs --target=node24 --outfile=dist/sea/summarizer.bundle.cjs",
+    "build": "npm run clean && tsc -p tsconfig.build.json && npm run copy:assets",
+    "build:bundle": "npm run build && esbuild dist/src/summarizer.js --bundle --platform=node --format=cjs --target=node24 --loader:.html=text --loader:.css=text --outfile=dist/sea/summarizer.bundle.cjs",
     "build:sea": "npm run build:bundle && node scripts/build-sea.mjs",
+    "copy:assets": "node scripts/copy-static-assets.mjs",
     "clean": "rimraf dist && rimraf --glob \\\"*.tsbuildinfo\\\"\"",
     "clean:modules": "rimraf node_modules package-lock.json",
     "create": "npm run build && npm run test",

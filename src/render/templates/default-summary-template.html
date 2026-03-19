@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voyager Summary</title>
+  <style>
+{{STYLES}}
+  </style>
+</head>
+<body>
+  <main class="summary-shell">
+    <header class="summary-header">
+      <h1>Voyager Summary</h1>
+      <p class="summary-subtitle">Unified report generated from tool summaries</p>
+    </header>
+    <div class="summary-grid">
+      <section class="summary-card">
+        <h2>Overview</h2>
+        <ul class="overview-list">{{OVERVIEW_ITEMS}}</ul>
+      </section>
+      <section class="summary-card">
+        <h2>Health</h2>
+        <p class="health-status">Status <span class="status-pill status-{{HEALTH_STATUS_CLASS}}">{{HEALTH_STATUS_LABEL}}</span></p>
+        <div class="health-metrics">
+          <span class="metric-chip">Critical: {{HEALTH_CRITICAL}}</span>
+          <span class="metric-chip">Errors: {{HEALTH_ERRORS}}</span>
+          <span class="metric-chip">Warnings: {{HEALTH_WARNINGS}}</span>
+        </div>
+      </section>
+    </div>
+    <section class="summary-card">
+      <h2>Diagnostics</h2>
+      <ul class="diagnostics-list">{{DIAGNOSTICS_ITEMS}}</ul>
+    </section>
+    <div class="tool-sections">{{TOOL_SECTIONS}}</div>
+  </main>
+</body>
+</html>

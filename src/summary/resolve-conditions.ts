@@ -1,89 +1,8 @@
 import { readTextFile } from '../io/read-files';
+import defaultConditionsFile from '../config/default-conditions.json';
 import { DiagnosticSeverity, ResolvedConditions, RuleDefinition } from './summary-types';
 
-const DEFAULT_CONDITIONS: ResolvedConditions = {
-  rules: [
-    {
-      id: 'inspector-git-failed',
-      severity: 'critical',
-      message: 'inspector-git failed',
-      when: "${status} == 'failed'",
-      variables: { status: 'tool.inspector-git.status' },
-      triggeredBy: ['inspector-git']
-    },
-    {
-      id: 'voyager-failed',
-      severity: 'critical',
-      message: 'voyager failed',
-      when: "${status} == 'failed'",
-      variables: { status: 'tool.voyager.status' },
-      triggeredBy: ['voyager']
-    },
-    {
-      id: 'insider-failed',
-      severity: 'error',
-      message: 'insider failed',
-      when: "${status} == 'failed'",
-      variables: { status: 'tool.insider.status' },
-      triggeredBy: ['insider']
-    },
-    {
-      id: 'dude-failed',
-      severity: 'error',
-      message: 'dude failed',
-      when: "${status} == 'failed'",
-      variables: { status: 'tool.dude.status' },
-      triggeredBy: ['dude']
-    },
-    {
-      id: 'lizard-failed',
-      severity: 'error',
-      message: 'lizard failed',
-      when: "${status} == 'failed'",
-      variables: { status: 'tool.lizard.status' },
-      triggeredBy: ['lizard']
-    },
-    {
-      id: 'honeydew-failed-significant-dotnet',
-      severity: 'error',
-      message: 'honeydew failed and .NET appears significant in the scanned codebase',
-      when: "${honeydewStatus} == 'failed' && (${dotnetPercent} > 5 || ${dotnetFiles} > 50)",
-      variables: {
-        honeydewStatus: 'tool.honeydew.status',
-        dotnetPercent: 'tool.insider.languages.dotnet.percent',
-        dotnetFiles: 'tool.insider.languages.dotnet.files'
-      },
-      triggeredBy: ['honeydew', 'insider']
-    },
-    {
-      id: 'jafax-failed-significant-java',
-      severity: 'error',
-      message: 'jafax failed and Java appears significant in the scanned codebase',
-      when: "${jafaxStatus} == 'failed' && ${javaFiles} > 100",
-      variables: {
-        jafaxStatus: 'tool.jafax.status',
-        javaFiles: 'tool.insider.languages.java.files'
-      },
-      triggeredBy: ['jafax', 'insider']
-    },
-    {
-      id: 'depminer-failed',
-      severity: 'warning',
-      message: 'depminer failed',
-      when: "${status} == 'failed'",
-      variables: { status: 'tool.depminer.status' },
-      triggeredBy: ['depminer']
-    },
-    {
-      id: 'codeframe-failed',
-      severity: 'warning',
-      message: 'codeframe failed',
-      when: "${status} == 'failed'",
-      variables: { status: 'tool.codeframe.status' },
-      triggeredBy: ['codeframe']
-    }
-  ]
-};
+const DEFAULT_CONDITIONS: ResolvedConditions = loadDefaultConditions();
 
 interface ConditionsFileInput {
   rules?: RuleDefinitionInput[];
@@ -115,6 +34,12 @@ export async function resolveConditions(
   }
 
   return resolved;
+}
+
+function loadDefaultConditions(): ResolvedConditions {
+  const defaults: ResolvedConditions = { rules: [] };
+  mergeConditionsFile(defaults, defaultConditionsFile);
+  return defaults;
 }
 
 function cloneConditions(source: ResolvedConditions): ResolvedConditions {
