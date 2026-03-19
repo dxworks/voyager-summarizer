@@ -13,6 +13,7 @@ export interface SummaryOverview {
 export function buildOverview(parsedTools: ParsedToolSummary[], conditions: ResolvedConditions): SummaryOverview {
   const diagnosticsResult = evaluateDiagnostics(parsedTools, conditions);
   const toolStatuses = buildToolStatuses(parsedTools);
+  applyStatusOverrides(toolStatuses, diagnosticsResult.overriddenToolStatuses);
 
   return {
     toolNames: parsedTools.map((tool) => tool.tool),
@@ -21,6 +22,15 @@ export function buildOverview(parsedTools: ParsedToolSummary[], conditions: Reso
     conditionWarnings: diagnosticsResult.warnings,
     health: buildHealth(diagnosticsResult.findings)
   };
+}
+
+function applyStatusOverrides(
+  toolStatuses: Record<string, ToolStatus>,
+  overrides: Record<string, ToolStatus>
+): void {
+  for (const [toolName, status] of Object.entries(overrides)) {
+    toolStatuses[toolName] = normalizeToolStatus(status);
+  }
 }
 
 function buildToolStatuses(parsedTools: ParsedToolSummary[]): Record<string, ToolStatus> {

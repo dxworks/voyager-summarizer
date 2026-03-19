@@ -79,6 +79,29 @@ describe('evaluateDiagnostics', () => {
     expect(result.findings.some((item) => item.code === 'jafax-failed-significant-java')).toBe(true);
   });
 
+  it('overrides triggered tools status when setStatus is present', () => {
+    const conditions: ResolvedConditions = {
+      rules: [
+        {
+          id: 'force-jafax-failed',
+          severity: 'error',
+          message: 'Force jafax as failed',
+          when: "${jafaxStatus} == 'success'",
+          variables: {
+            jafaxStatus: 'tool.jafax.status'
+          },
+          triggeredBy: ['jafax'],
+          setStatus: 'failed'
+        }
+      ]
+    };
+
+    const result = evaluateDiagnostics([makeParsedTool('jafax', { status: 'success' })], conditions);
+
+    expect(result.findings.some((item) => item.code === 'force-jafax-failed')).toBe(true);
+    expect(result.overriddenToolStatuses).toEqual({ jafax: 'failed' });
+  });
+
   it('skips rules with missing metadata and returns warning', () => {
     const conditions: ResolvedConditions = {
       rules: [
@@ -100,5 +123,6 @@ describe('evaluateDiagnostics', () => {
     expect(result.findings).toEqual([]);
     expect(result.warnings).toHaveLength(1);
     expect(result.warnings[0]).toContain("Skipped rule 'missing-data-rule'");
+    expect(result.overriddenToolStatuses).toEqual({});
   });
 });

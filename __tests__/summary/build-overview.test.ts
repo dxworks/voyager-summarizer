@@ -56,4 +56,35 @@ describe('buildOverview', () => {
       "Skipped rule 'lizard-failed' due to missing metadata values: status -> tool.lizard.status"
     ]);
   });
+
+  it('overrides tool status from triggered rule setStatus', () => {
+    const parsedTools: ParsedToolSummary[] = [
+      {
+        tool: 'jafax',
+        metadata: { 'html-template': 'inline', status: 'success' },
+        htmlTemplateMode: 'inline',
+        htmlTemplateContent: '<div>jafax</div>',
+        htmlTemplateAvailable: true,
+        markdownContent: '# jafax'
+      }
+    ];
+
+    const conditions: ResolvedConditions = {
+      rules: [
+        {
+          id: 'force-jafax-failed',
+          severity: 'error',
+          message: 'Force jafax as failed',
+          when: "${status} == 'success'",
+          variables: { status: 'tool.jafax.status' },
+          triggeredBy: ['jafax'],
+          setStatus: 'failed'
+        }
+      ]
+    };
+
+    const overview = buildOverview(parsedTools, conditions);
+
+    expect(overview.toolStatuses).toEqual({ jafax: 'failed' });
+  });
 });

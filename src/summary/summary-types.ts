@@ -9,6 +9,7 @@ export interface RuleDefinition {
   when: string;
   variables: Record<string, string>;
   triggeredBy: string[];
+  setStatus?: ToolStatus;
 }
 
 export interface ResolvedConditions {

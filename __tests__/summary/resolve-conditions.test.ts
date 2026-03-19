@@ -67,4 +67,53 @@ describe('resolveConditions', () => {
       "Invalid rule definition 'custom-jafax': 'onMissing' is no longer supported"
     );
   });
+
+  it('applies setStatus from conditions file and allows cli override', async () => {
+    readTextFileMock.mockResolvedValue(
+      JSON.stringify({
+        rules: [
+          {
+            id: 'force-jafax-failed',
+            severity: 'error',
+            message: 'Force jafax as failed',
+            when: "${status} == 'success'",
+            variables: {
+              status: 'tool.jafax.status'
+            },
+            triggeredBy: ['jafax'],
+            setStatus: 'failed'
+          }
+        ]
+      })
+    );
+
+    const result = await resolveConditions('/tmp/conditions.json', [
+      ['rules.force-jafax-failed.setStatus', 'partial']
+    ]);
+
+    const rule = result.rules.find((item) => item.id === 'force-jafax-failed');
+    expect(rule?.setStatus).toBe('partial');
+  });
+
+  it('throws when setStatus is invalid', async () => {
+    readTextFileMock.mockResolvedValue(
+      JSON.stringify({
+        rules: [
+          {
+            id: 'force-jafax-failed',
+            when: "${status} == 'success'",
+            variables: {
+              status: 'tool.jafax.status'
+            },
+            triggeredBy: ['jafax'],
+            setStatus: 'broken'
+          }
+        ]
+      })
+    );
+
+    await expect(resolveConditions('/tmp/conditions.json', [])).rejects.toThrow(
+      "Invalid setStatus for rule 'force-jafax-failed': broken"
+    );
+  });
 });

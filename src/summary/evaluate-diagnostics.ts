@@ -5,6 +5,7 @@ import { DiagnosticFinding, ResolvedConditions, RuleDefinition, ToolStatus } fro
 export interface DiagnosticsEvaluationResult {
   findings: DiagnosticFinding[];
   warnings: string[];
+  overriddenToolStatuses: Record<string, ToolStatus>;
 }
 
 export function evaluateDiagnostics(
@@ -13,6 +14,7 @@ export function evaluateDiagnostics(
 ): DiagnosticsEvaluationResult {
   const findings: DiagnosticFinding[] = [];
   const warnings: string[] = [];
+  const overriddenToolStatuses: Record<string, ToolStatus> = {};
   const context = buildRuleContext(parsedTools);
 
   for (const rule of conditions.rules) {
@@ -27,12 +29,19 @@ export function evaluateDiagnostics(
         message: rule.message,
         triggeredBy: rule.triggeredBy
       });
+
+      if (rule.setStatus) {
+        for (const toolName of rule.triggeredBy) {
+          overriddenToolStatuses[toolName] = rule.setStatus;
+        }
+      }
     }
   }
 
   return {
     findings,
-    warnings
+    warnings,
+    overriddenToolStatuses
   };
 }
 

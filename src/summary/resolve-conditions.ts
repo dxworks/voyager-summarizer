@@ -15,6 +15,7 @@ interface RuleDefinitionInput {
   when?: unknown;
   variables?: unknown;
   triggeredBy?: unknown;
+  setStatus?: unknown;
 }
 
 export async function resolveConditions(
@@ -89,6 +90,7 @@ function normalizeRuleDefinition(input: RuleDefinitionInput): RuleDefinition {
   const severity = parseSeverity(input.severity, input.id);
   const variables = parseVariables(input.variables, input.id);
   const triggeredBy = parseStringArray(input.triggeredBy, input.id, 'triggeredBy');
+  const setStatus = parseToolStatus(input.setStatus, input.id);
 
   return {
     id: input.id,
@@ -96,7 +98,8 @@ function normalizeRuleDefinition(input: RuleDefinitionInput): RuleDefinition {
     message: typeof input.message === 'string' && input.message.trim() ? input.message.trim() : input.id,
     when: input.when,
     variables,
-    triggeredBy
+    triggeredBy,
+    setStatus
   };
 }
 
@@ -110,6 +113,18 @@ function parseSeverity(value: unknown, ruleId: string): DiagnosticSeverity {
   }
 
   throw new Error(`Invalid severity for rule '${ruleId}': ${String(value)}`);
+}
+
+function parseToolStatus(value: unknown, ruleId: string): 'success' | 'failed' | 'partial' | 'unknown' | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (value === 'success' || value === 'failed' || value === 'partial' || value === 'unknown') {
+    return value;
+  }
+
+  throw new Error(`Invalid setStatus for rule '${ruleId}': ${String(value)}`);
 }
 
 function parseVariables(value: unknown, ruleId: string): Record<string, string> {
@@ -201,6 +216,11 @@ function applyCliOverride(target: ResolvedConditions, key: string, value: string
       .split(',')
       .map((entry) => entry.trim())
       .filter((entry) => entry.length > 0);
+    return;
+  }
+
+  if (field === 'setStatus') {
+    rule.setStatus = parseToolStatus(value, ruleId);
     return;
   }
 
