@@ -14,6 +14,7 @@ const DEFAULT_TOOL_ORDER = ['depminer', 'dude', 'honeydew', 'insider', 'inspecto
 export interface GenerateSummaryInput {
   toolMd: Array<[string, string]>;
   toolHtml: Array<[string, string]>;
+  toolCategory?: Array<[string, string]>;
   conditionsFile?: string;
   conditions: Array<[string, string]>;
   toolOrderFile?: string;
@@ -30,7 +31,7 @@ export interface GenerateSummaryResult {
 
 export async function generateSummary(input: GenerateSummaryInput): Promise<GenerateSummaryResult> {
   const conditions = await resolveConditions(input.conditionsFile, input.conditions);
-  const parsed = await parseToolSummaries(input.toolMd, input.toolHtml);
+  const parsed = await parseToolSummaries(input.toolMd, input.toolHtml, input.toolCategory ?? []);
   const parsedTools = parsed.parsedTools;
   const toolOrder = input.toolOrderFile ? await readToolOrder(input.toolOrderFile) : DEFAULT_TOOL_ORDER;
   const ordering = orderTools(parsedTools, toolOrder);
@@ -70,7 +71,8 @@ interface OrderToolsResult {
 
 async function parseToolSummaries(
   toolMd: Array<[string, string]>,
-  toolHtml: Array<[string, string]>
+  toolHtml: Array<[string, string]>,
+  toolCategory: Array<[string, string]>
 ): Promise<ParsedToolSummariesResult> {
   const htmlByTool = new Map<string, string>(
     toolHtml
@@ -79,6 +81,9 @@ async function parseToolSummaries(
   );
   const parsedTools: ParsedToolSummary[] = [];
   const warnings: string[] = [];
+  const categoryByTool = new Map<string, string>(
+    toolCategory.map(([tool, category]) => [tool, category])
+  );
 
   for (const [tool, mdPath] of toolMd) {
     try {
@@ -87,16 +92,18 @@ async function parseToolSummaries(
       const htmlReferencePath = htmlByTool.get(tool);
       const htmlTemplateReferenceContent = htmlReferencePath ? await readTextFile(htmlReferencePath) : undefined;
 
-      parsedTools.push(
-        parseToolSummaryMarkdown({
-          tool,
-          filePath: mdPath,
-          content: markdownRaw,
-          htmlTemplateReferenceContent
-        })
-      );
+      const parsedTool = parseToolSummaryMarkdown({
+        tool,
+        filePath: mdPath,
+        content: markdownRaw,
+        htmlTemplateReferenceContent
+      });
 
-      const parsedTool = parsedTools[parsedTools.length - 1];
+      parsedTools.push({
+        ...parsedTool,
+        category: normalizeOptionalCategory(categoryByTool.get(tool))
+      });
+
       if (parsedTool.htmlTemplateMode === 'reference' && !parsedTool.htmlTemplateAvailable) {
         warnings.push(
           `Missing HTML template reference for ${tool}; skipping this tool section from the HTML report`
@@ -124,6 +131,24 @@ function normalizeOptionalPath(filePath: string): string {
   const lowerCased = normalized.toLowerCase();
   if (lowerCased === 'null' || lowerCased === 'undefined') {
     return '';
+  }
+
+  return normalized;
+}
+
+function normalizeOptionalCategory(category: string | undefined): string | undefined {
+  if (!category) {
+    return undefined;
+  }
+
+  const normalized = category.trim();
+  if (normalized.length === 0) {
+    return undefined;
+  }
+
+  const lowerCased = normalized.toLowerCase();
+  if (lowerCased === 'null' || lowerCased === 'undefined') {
+    return undefined;
   }
 
   return normalized;

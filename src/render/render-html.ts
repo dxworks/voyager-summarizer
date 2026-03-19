@@ -17,13 +17,7 @@ export function renderHtmlSummary(overview: SummaryOverview, parsedTools: Parsed
               `<li class="diagnostic-item severity-${item.severity}"><span class="diagnostic-severity">${escapeHtml(item.severity)}</span><span class="diagnostic-message">${escapeHtml(item.message)}</span></li>`
           )
           .join('');
-  const toolSections = parsedTools
-    .filter((tool) => tool.htmlTemplateAvailable)
-    .map(
-      (tool) =>
-        `<section class="summary-card tool-card"><h2>${escapeHtml(tool.tool)}</h2><div class="tool-content">${tool.htmlTemplateContent}</div></section>`
-    )
-    .join('');
+  const toolSections = renderToolSections(parsedTools);
 
   return [
     '<!doctype html>',
@@ -171,6 +165,37 @@ export function renderHtmlSummary(overview: SummaryOverview, parsedTools: Parsed
     '      display: grid;',
     '      gap: 14px;',
     '    }',
+    '    .category-group {',
+    '      background: var(--panel);',
+    '      border: 1px solid var(--line);',
+    '      border-radius: 14px;',
+    '      box-shadow: var(--shadow);',
+    '      overflow: hidden;',
+    '    }',
+    '    .category-summary {',
+    '      cursor: pointer;',
+    '      list-style: none;',
+    '      display: flex;',
+    '      justify-content: space-between;',
+    '      align-items: center;',
+    '      gap: 8px;',
+    '      padding: 14px 16px;',
+    '      background: var(--panel-muted);',
+    '      border-bottom: 1px solid var(--line);',
+    '      font-weight: 600;',
+    '    }',
+    '    .category-summary::-webkit-details-marker { display: none; }',
+    '    .category-title { font-size: 1rem; }',
+    '    .category-count {',
+    '      color: var(--text-muted);',
+    '      font-size: 0.82rem;',
+    '      font-weight: 600;',
+    '    }',
+    '    .category-tools {',
+    '      display: grid;',
+    '      gap: 12px;',
+    '      padding: 12px;',
+    '    }',
     '    .tool-card h2 {',
     '      border-bottom: 1px solid var(--line);',
     '      padding-bottom: 8px;',
@@ -224,4 +249,42 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function renderToolSections(parsedTools: ParsedToolSummary[]): string {
+  const categorizedTools = new Map<string, ParsedToolSummary[]>();
+  const uncategorizedTools: ParsedToolSummary[] = [];
+
+  for (const tool of parsedTools) {
+    if (!tool.htmlTemplateAvailable) {
+      continue;
+    }
+
+    if (!tool.category) {
+      uncategorizedTools.push(tool);
+      continue;
+    }
+
+    if (!categorizedTools.has(tool.category)) {
+      categorizedTools.set(tool.category, []);
+    }
+
+    categorizedTools.get(tool.category)!.push(tool);
+  }
+
+  const categorySections = Array.from(categorizedTools.entries())
+    .map(([category, tools]) => {
+      const categoryToolCards = tools.map((tool) => renderToolCard(tool)).join('');
+      const countLabel = tools.length === 1 ? '1 tool' : `${tools.length} tools`;
+      return `<details class="category-group"><summary class="category-summary"><span class="category-title">${escapeHtml(category)}</span><span class="category-count">${countLabel}</span></summary><div class="category-tools">${categoryToolCards}</div></details>`;
+    })
+    .join('');
+
+  const uncategorizedSections = uncategorizedTools.map((tool) => renderToolCard(tool)).join('');
+
+  return `${categorySections}${uncategorizedSections}`;
+}
+
+function renderToolCard(tool: ParsedToolSummary): string {
+  return `<section class="summary-card tool-card"><h2>${escapeHtml(tool.tool)}</h2><div class="tool-content">${tool.htmlTemplateContent}</div></section>`;
 }

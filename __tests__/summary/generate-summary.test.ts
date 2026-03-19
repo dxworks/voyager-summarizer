@@ -283,4 +283,49 @@ describe('generateSummary', () => {
       ])
     );
   });
+
+  it('renders categorized sections and appends uncategorized tools at the end', async () => {
+    readTextFileMock.mockImplementation(async (filePath: string) => {
+      if (filePath === '/in/depminer.md') {
+        return ['---', 'tool: depminer', 'html-template: inline', 'status: success', '---', '<div id="depminer">depminer</div>', '---', '# depminer'].join('\n');
+      }
+
+      if (filePath === '/in/dude.md') {
+        return ['---', 'tool: dude', 'html-template: inline', 'status: success', '---', '<div id="dude">dude</div>', '---', '# dude'].join('\n');
+      }
+
+      if (filePath === '/in/jafax.md') {
+        return ['---', 'tool: jafax', 'html-template: inline', 'status: success', '---', '<div id="jafax">jafax</div>', '---', '# jafax'].join('\n');
+      }
+
+      throw new Error(`Unexpected file path: ${filePath}`);
+    });
+
+    await generateSummary({
+      toolMd: [
+        ['depminer', '/in/depminer.md'],
+        ['dude', '/in/dude.md'],
+        ['jafax', '/in/jafax.md']
+      ],
+      toolHtml: [],
+      toolCategory: [
+        ['depminer', 'Architecture'],
+        ['dude', 'Architecture'],
+        ['jafax', 'null']
+      ],
+      conditions: []
+    });
+
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.html',
+      expect.stringContaining('<details class="category-group"><summary class="category-summary"><span class="category-title">Architecture</span><span class="category-count">2 tools</span></summary>')
+    );
+
+    const htmlOutput = writeTextFileMock.mock.calls.find(([filePath]) => filePath === 'summary.html')?.[1] as string;
+    const categoryPos = htmlOutput.indexOf('<details class="category-group"><summary class="category-summary"><span class="category-title">Architecture</span><span class="category-count">2 tools</span></summary>');
+    const uncategorizedPos = htmlOutput.indexOf('<section class="summary-card tool-card"><h2>jafax</h2><div class="tool-content"><div id="jafax">jafax</div></div></section>');
+    expect(categoryPos).toBeGreaterThan(-1);
+    expect(uncategorizedPos).toBeGreaterThan(-1);
+    expect(categoryPos).toBeLessThan(uncategorizedPos);
+  });
 });

@@ -2,6 +2,7 @@ export type HtmlTemplateMode = 'inline' | 'reference';
 
 export interface ParsedToolSummary {
   tool: string;
+  category?: string;
   metadata: Record<string, string>;
   htmlTemplateMode: HtmlTemplateMode;
   htmlTemplateContent: string;

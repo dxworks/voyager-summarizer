@@ -6,10 +6,12 @@ function makeParsedTool(
   tool: string,
   htmlTemplateContent: string,
   markdownContent = `# ${tool}`,
-  htmlTemplateAvailable = true
+  htmlTemplateAvailable = true,
+  category?: string
 ): ParsedToolSummary {
   return {
     tool,
+    category,
     metadata: { 'html-template': 'inline' },
     htmlTemplateMode: 'inline',
     htmlTemplateContent,
@@ -125,5 +127,36 @@ describe('renderHtmlSummary', () => {
     expect(output).toContain('<section class="summary-card tool-card"><h2>jafax</h2><div class="tool-content"><div id="jafax">jafax</div></div></section>');
     expect(output).toContain('<section class="summary-card tool-card"><h2>insider</h2><div class="tool-content"><div id="insider">insider</div></div></section>');
     expect(output).not.toContain('<section class="summary-card tool-card"><h2>lizard</h2>');
+  });
+
+  it('groups categorized tools in collapsible sections and appends uncategorized tools', () => {
+    const overview: SummaryOverview = {
+      toolNames: ['depminer', 'dude', 'jafax'],
+      toolStatuses: { depminer: 'success', dude: 'success', jafax: 'success' },
+      diagnostics: [],
+      conditionWarnings: [],
+      health: {
+        status: 'info',
+        criticalCount: 0,
+        errorCount: 0,
+        warningCount: 0
+      }
+    };
+
+    const parsedTools: ParsedToolSummary[] = [
+      makeParsedTool('depminer', '<div id="depminer">depminer</div>', '# depminer', true, 'Architecture'),
+      makeParsedTool('dude', '<div id="dude">dude</div>', '# dude', true, 'Architecture'),
+      makeParsedTool('jafax', '<div id="jafax">jafax</div>')
+    ];
+
+    const output = renderHtmlSummary(overview, parsedTools);
+
+    expect(output).toContain('<details class="category-group"><summary class="category-summary"><span class="category-title">Architecture</span><span class="category-count">2 tools</span></summary>');
+
+    const architecturePos = output.indexOf('<details class="category-group"><summary class="category-summary"><span class="category-title">Architecture</span><span class="category-count">2 tools</span></summary>');
+    const jafaxPos = output.indexOf('<section class="summary-card tool-card"><h2>jafax</h2><div class="tool-content"><div id="jafax">jafax</div></div></section>');
+    expect(architecturePos).toBeGreaterThan(-1);
+    expect(jafaxPos).toBeGreaterThan(-1);
+    expect(architecturePos).toBeLessThan(jafaxPos);
   });
 });
