@@ -159,4 +159,23 @@ describe('renderHtmlSummary', () => {
     expect(jafaxPos).toBeGreaterThan(-1);
     expect(architecturePos).toBeLessThan(jafaxPos);
   });
+
+  it('renders missing status with dedicated class', () => {
+    const overview: SummaryOverview = {
+      toolNames: ['jafax'],
+      toolStatuses: { jafax: 'missing' },
+      diagnostics: [],
+      conditionWarnings: [],
+      health: {
+        status: 'info',
+        criticalCount: 0,
+        errorCount: 0,
+        warningCount: 0
+      }
+    };
+
+    const output = renderHtmlSummary(overview, [makeParsedTool('jafax', '<div>jafax</div>')]);
+
+    expect(output).toContain('<span class="tool-name">jafax</span><span class="status-pill status-missing">missing</span>');
+  });
 });

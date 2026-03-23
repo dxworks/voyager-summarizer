@@ -159,7 +159,7 @@ function parseMetadataValue(rawValue: string): unknown {
 }
 
 function normalizeToolStatus(rawStatus: string | undefined): ToolStatus {
-  if (rawStatus === 'success' || rawStatus === 'failed' || rawStatus === 'partial' || rawStatus === 'unknown') {
+  if (rawStatus === 'success' || rawStatus === 'failed' || rawStatus === 'partial' || rawStatus === 'missing' || rawStatus === 'unknown') {
     return rawStatus;
   }
 

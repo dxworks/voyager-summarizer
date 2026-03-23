@@ -87,4 +87,21 @@ describe('buildOverview', () => {
 
     expect(overview.toolStatuses).toEqual({ jafax: 'failed' });
   });
+
+  it('keeps missing status when provided by tool metadata', () => {
+    const parsedTools: ParsedToolSummary[] = [
+      {
+        tool: 'honeydew',
+        metadata: { 'html-template': 'inline', status: 'missing' },
+        htmlTemplateMode: 'inline',
+        htmlTemplateContent: '<div>honeydew</div>',
+        htmlTemplateAvailable: true,
+        markdownContent: '# honeydew'
+      }
+    ];
+
+    const overview = buildOverview(parsedTools, DEFAULT_CONDITIONS);
+
+    expect(overview.toolStatuses).toEqual({ honeydew: 'missing' });
+  });
 });

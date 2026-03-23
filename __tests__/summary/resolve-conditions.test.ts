@@ -116,4 +116,27 @@ describe('resolveConditions', () => {
       "Invalid setStatus for rule 'force-jafax-failed': broken"
     );
   });
+
+  it('accepts missing as a valid setStatus value', async () => {
+    readTextFileMock.mockResolvedValue(
+      JSON.stringify({
+        rules: [
+          {
+            id: 'force-jafax-missing',
+            when: "${status} == 'failed'",
+            variables: {
+              status: 'tool.jafax.status'
+            },
+            triggeredBy: ['jafax'],
+            setStatus: 'missing'
+          }
+        ]
+      })
+    );
+
+    const result = await resolveConditions('/tmp/conditions.json', []);
+    const rule = result.rules.find((item) => item.id === 'force-jafax-missing');
+
+    expect(rule?.setStatus).toBe('missing');
+  });
 });

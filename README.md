@@ -110,7 +110,7 @@ Fields:
 - `when` (required): expression to evaluate.
 - `variables` (optional): placeholder-to-metadata-path mapping.
 - `triggeredBy` (optional): list of tool ids associated with the finding.
-- `setStatus` (optional): override status for each tool in `triggeredBy` (`success`, `failed`, `partial`, `unknown`).
+- `setStatus` (optional): override status for each tool in `triggeredBy` (`success`, `failed`, `partial`, `missing`, `unknown`).
 
 `onMissing` is deprecated and rejected.
 

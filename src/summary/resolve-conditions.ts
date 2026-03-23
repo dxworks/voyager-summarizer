@@ -115,12 +115,12 @@ function parseSeverity(value: unknown, ruleId: string): DiagnosticSeverity {
   throw new Error(`Invalid severity for rule '${ruleId}': ${String(value)}`);
 }
 
-function parseToolStatus(value: unknown, ruleId: string): 'success' | 'failed' | 'partial' | 'unknown' | undefined {
+function parseToolStatus(value: unknown, ruleId: string): 'success' | 'failed' | 'partial' | 'missing' | 'unknown' | undefined {
   if (value === undefined) {
     return undefined;
   }
 
-  if (value === 'success' || value === 'failed' || value === 'partial' || value === 'unknown') {
+  if (value === 'success' || value === 'failed' || value === 'partial' || value === 'missing' || value === 'unknown') {
     return value;
   }
 

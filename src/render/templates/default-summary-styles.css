@@ -10,6 +10,7 @@
       --error: #b23828;
       --warning: #a36a1b;
       --success: #1d7d48;
+      --missing: #6e7781;
       --unknown: #5f6c6a;
       --shadow: 0 10px 28px rgba(13, 48, 43, 0.08);
     }
@@ -94,6 +95,7 @@
     .status-success { color: var(--success); background: #dbf1e5; border-color: #a8d6bd; }
     .status-failed { color: var(--error); background: #f9dfdf; border-color: #ecbbbb; }
     .status-partial { color: var(--warning); background: #faebd5; border-color: #e8c998; }
+    .status-missing { color: var(--missing); background: #eceff2; border-color: #d0d7de; }
     .status-unknown { color: var(--unknown); background: #e8efee; border-color: #cad8d5; }
     .health-metrics {
       display: flex;

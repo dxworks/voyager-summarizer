@@ -44,7 +44,7 @@ function buildToolStatuses(parsedTools: ParsedToolSummary[]): Record<string, Too
 }
 
 function normalizeToolStatus(status: string | undefined): ToolStatus {
-  if (status === 'success' || status === 'failed' || status === 'partial' || status === 'unknown') {
+  if (status === 'success' || status === 'failed' || status === 'partial' || status === 'missing' || status === 'unknown') {
     return status;
   }
 
