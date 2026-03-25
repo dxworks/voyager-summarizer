@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { openHtmlReport } from './io/open-html-report';
 import { generateSummary } from './summary/generate-summary';
 
 const program = new Command();
@@ -19,6 +20,7 @@ program
   .option('--condition <rules.<id>.<field>=value>', 'Condition rule override (repeatable)', collectKeyValue, [])
   .option('--out-html <path d="">', 'Output path for HTML report')
   .option('--out-md <path d="">', 'Output path for Markdown report')
+  .option('--no-open-html', 'Do not open generated HTML report')
   .action(async (options) => {
     console.log('summarized');
 
@@ -41,6 +43,16 @@ program
 
     if (result.writtenHtmlPath) {
       console.log(`Wrote HTML report to ${result.writtenHtmlPath}`);
+
+      if (options.openHtml !== false) {
+        try {
+          await openHtmlReport(result.writtenHtmlPath);
+          console.log('Opened HTML report in the default browser');
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          console.warn(`Warning: Unable to open HTML report automatically: ${message}`);
+        }
+      }
     }
 
     if (result.writtenMdPath) {
