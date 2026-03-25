@@ -267,15 +267,15 @@ describe('generateSummary', () => {
 
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<section class="summary-card tool-card"><h2>jafax</h2><div class="tool-content"><div>jafax</div></div></section>')
+      expect.stringContaining('<section class="summary-card tool-card tool-card-status-success"><div class="tool-card-header"><h2>jafax</h2><span class="status-pill status-success">success</span></div><div class="tool-content"><div>jafax</div></div></section>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<section class="summary-card tool-card"><h2>insider</h2><div class="tool-content"><div>insider</div></div></section>')
+      expect.stringContaining('<section class="summary-card tool-card tool-card-status-success"><div class="tool-card-header"><h2>insider</h2><span class="status-pill status-success">success</span></div><div class="tool-content"><div>insider</div></div></section>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.not.stringContaining('<section class="summary-card tool-card"><h2>lizard</h2>')
+      expect.not.stringContaining('<section class="summary-card tool-card tool-card-status-success"><div class="tool-card-header"><h2>lizard</h2>')
     );
     expect(result.parseWarnings).toEqual(
       expect.arrayContaining([
@@ -323,7 +323,7 @@ describe('generateSummary', () => {
 
     const htmlOutput = writeTextFileMock.mock.calls.find(([filePath]) => filePath === 'summary.html')?.[1] as string;
     const categoryPos = htmlOutput.indexOf('<details class="category-group"><summary class="category-summary"><span class="category-title">Architecture</span><span class="category-count">2 tools</span></summary>');
-    const uncategorizedPos = htmlOutput.indexOf('<section class="summary-card tool-card"><h2>jafax</h2><div class="tool-content"><div id="jafax">jafax</div></div></section>');
+    const uncategorizedPos = htmlOutput.indexOf('<section class="summary-card tool-card tool-card-status-success"><div class="tool-card-header"><h2>jafax</h2><span class="status-pill status-success">success</span></div><div class="tool-content"><div id="jafax">jafax</div></div></section>');
     expect(categoryPos).toBeGreaterThan(-1);
     expect(uncategorizedPos).toBeGreaterThan(-1);
     expect(categoryPos).toBeLessThan(uncategorizedPos);

@@ -81,8 +81,8 @@ describe('renderMarkdownSummary', () => {
 
     const output = renderMarkdownSummary(overview, parsedTools);
 
-    const insiderPos = output.indexOf('## insider\n## insider markdown');
-    const lizardPos = output.indexOf('## lizard\n## lizard markdown');
+    const insiderPos = output.indexOf('## insider\n- Consolidated status: success\n\n## insider markdown');
+    const lizardPos = output.indexOf('## lizard\n- Consolidated status: success\n\n## lizard markdown');
 
     expect(insiderPos).toBeGreaterThan(-1);
     expect(lizardPos).toBeGreaterThan(-1);

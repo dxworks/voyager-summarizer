@@ -210,6 +210,25 @@
       padding-bottom: 8px;
       margin-bottom: 10px;
     }
+    .tool-card .tool-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+    .tool-card .tool-card-header h2 {
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+    .tool-card-status-success { border-left: 4px solid var(--success); }
+    .tool-card-status-failed { border-left: 4px solid var(--error); }
+    .tool-card-status-partial { border-left: 4px solid var(--warning); }
+    .tool-card-status-missing { border-left: 4px solid var(--missing); }
+    .tool-card-status-unknown { border-left: 4px solid var(--unknown); }
     @media (max-width: 640px) {
       .summary-shell { padding: 18px 12px 28px; }
       .overview-item, .diagnostic-item { align-items: flex-start; flex-direction: column; }

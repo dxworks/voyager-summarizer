@@ -19,7 +19,7 @@ export function renderHtmlSummary(overview: SummaryOverview, parsedTools: Parsed
               `<li class="diagnostic-item severity-${item.severity}"><span class="diagnostic-severity">${escapeHtml(item.severity)}</span><span class="diagnostic-message">${escapeHtml(item.message)}</span></li>`
           )
           .join('');
-  const toolSections = renderToolSections(parsedTools);
+  const toolSections = renderToolSections(parsedTools, overview.toolStatuses);
   const overallStatusTools = overview.overallStatus.affectedTools.length > 0
     ? `<p class="overall-status-tools">Affected tools: ${escapeHtml(overview.overallStatus.affectedTools.join(', '))}</p>`
     : '';
@@ -50,7 +50,7 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
-function renderToolSections(parsedTools: ParsedToolSummary[]): string {
+function renderToolSections(parsedTools: ParsedToolSummary[], toolStatuses: SummaryOverview['toolStatuses']): string {
   const categorizedTools = new Map<string, ParsedToolSummary[]>();
   const uncategorizedTools: ParsedToolSummary[] = [];
 
@@ -73,19 +73,21 @@ function renderToolSections(parsedTools: ParsedToolSummary[]): string {
 
   const categorySections = Array.from(categorizedTools.entries())
     .map(([category, tools]) => {
-      const categoryToolCards = tools.map((tool) => renderToolCard(tool)).join('');
+      const categoryToolCards = tools.map((tool) => renderToolCard(tool, toolStatuses[tool.tool] ?? 'unknown')).join('');
       const countLabel = tools.length === 1 ? '1 tool' : `${tools.length} tools`;
       return `<details class="category-group"><summary class="category-summary"><span class="category-title">${escapeHtml(category)}</span><span class="category-count">${countLabel}</span></summary><div class="category-tools">${categoryToolCards}</div></details>`;
     })
     .join('');
 
-  const uncategorizedSections = uncategorizedTools.map((tool) => renderToolCard(tool)).join('');
+  const uncategorizedSections = uncategorizedTools
+    .map((tool) => renderToolCard(tool, toolStatuses[tool.tool] ?? 'unknown'))
+    .join('');
 
   return `${categorySections}${uncategorizedSections}`;
 }
 
-function renderToolCard(tool: ParsedToolSummary): string {
-  return `<section class="summary-card tool-card"><h2>${escapeHtml(tool.tool)}</h2><div class="tool-content">${tool.htmlTemplateContent}</div></section>`;
+function renderToolCard(tool: ParsedToolSummary, status: string): string {
+  return `<section class="summary-card tool-card tool-card-status-${escapeHtml(status)}"><div class="tool-card-header"><h2>${escapeHtml(tool.tool)}</h2><span class="status-pill status-${escapeHtml(status)}">${escapeHtml(status)}</span></div><div class="tool-content">${tool.htmlTemplateContent}</div></section>`;
 }
 
 function applyTemplate(template: string, replacements: Record<string, string>): string {

@@ -32,6 +32,8 @@ export function renderMarkdownSummary(overview: SummaryOverview, parsedTools: Pa
 
   for (const tool of parsedTools) {
     lines.push(`## ${tool.tool}`);
+    lines.push(`- Consolidated status: ${overview.toolStatuses[tool.tool] ?? 'unknown'}`);
+    lines.push('');
     lines.push(tool.markdownContent);
     lines.push('');
   }
