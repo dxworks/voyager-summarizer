@@ -79,11 +79,17 @@ function renderToolSections(parsedTools: ParsedToolSummary[], toolStatuses: Summ
     })
     .join('');
 
-  const uncategorizedSections = uncategorizedTools
-    .map((tool) => renderToolCard(tool, toolStatuses[tool.tool] ?? 'unknown'))
-    .join('');
+  const otherCategorySection = uncategorizedTools.length > 0
+    ? (() => {
+        const otherToolCards = uncategorizedTools
+          .map((tool) => renderToolCard(tool, toolStatuses[tool.tool] ?? 'unknown'))
+          .join('');
+        const countLabel = uncategorizedTools.length === 1 ? '1 tool' : `${uncategorizedTools.length} tools`;
+        return `<details class="category-group"><summary class="category-summary"><span class="category-title">Other</span><span class="category-count">${countLabel}</span></summary><div class="category-tools">${otherToolCards}</div></details>`;
+      })()
+    : '';
 
-  return `${categorySections}${uncategorizedSections}`;
+  return `${categorySections}${otherCategorySection}`;
 }
 
 function renderToolCard(tool: ParsedToolSummary, status: string): string {

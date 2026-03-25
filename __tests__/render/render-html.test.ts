@@ -148,7 +148,7 @@ describe('renderHtmlSummary', () => {
     expect(output).not.toContain('<section class="summary-card tool-card tool-card-status-success"><div class="tool-card-header"><h2>lizard</h2>');
   });
 
-  it('groups categorized tools in collapsible sections and appends uncategorized tools', () => {
+  it('groups categorized tools in collapsible sections and places uncategorized tools in Other', () => {
     const overview: SummaryOverview = {
       toolNames: ['depminer', 'dude', 'jafax'],
       toolStatuses: { depminer: 'success', dude: 'success', jafax: 'success' },
@@ -172,12 +172,13 @@ describe('renderHtmlSummary', () => {
     const output = renderHtmlSummary(overview, parsedTools);
 
     expect(output).toContain('<details class="category-group"><summary class="category-summary"><span class="category-title">Architecture</span><span class="category-count">2 tools</span></summary>');
+    expect(output).toContain('<details class="category-group"><summary class="category-summary"><span class="category-title">Other</span><span class="category-count">1 tool</span></summary>');
 
     const architecturePos = output.indexOf('<details class="category-group"><summary class="category-summary"><span class="category-title">Architecture</span><span class="category-count">2 tools</span></summary>');
-    const jafaxPos = output.indexOf('<section class="summary-card tool-card tool-card-status-success"><div class="tool-card-header"><h2>jafax</h2><span class="status-pill status-success">success</span></div><div class="tool-content"><div id="jafax">jafax</div></div></section>');
+    const otherPos = output.indexOf('<details class="category-group"><summary class="category-summary"><span class="category-title">Other</span><span class="category-count">1 tool</span></summary>');
     expect(architecturePos).toBeGreaterThan(-1);
-    expect(jafaxPos).toBeGreaterThan(-1);
-    expect(architecturePos).toBeLessThan(jafaxPos);
+    expect(otherPos).toBeGreaterThan(-1);
+    expect(architecturePos).toBeLessThan(otherPos);
   });
 
   it('renders missing status with dedicated class', () => {

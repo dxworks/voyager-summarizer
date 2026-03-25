@@ -28,15 +28,51 @@ export function renderMarkdownSummary(overview: SummaryOverview, parsedTools: Pa
 
   if (parsedTools.length > 0) {
     lines.push('');
+    lines.push('## Tool Summaries');
+    lines.push('');
+
+    const categorizedTools = new Map<string, ParsedToolSummary[]>();
+    const uncategorizedTools: ParsedToolSummary[] = [];
+
+    for (const tool of parsedTools) {
+      if (!tool.category) {
+        uncategorizedTools.push(tool);
+        continue;
+      }
+
+      if (!categorizedTools.has(tool.category)) {
+        categorizedTools.set(tool.category, []);
+      }
+
+      categorizedTools.get(tool.category)!.push(tool);
+    }
+
+    for (const [category, tools] of categorizedTools.entries()) {
+      lines.push(`### ${category}`);
+      lines.push('');
+      appendTools(lines, tools, overview.toolStatuses);
+    }
+
+    if (uncategorizedTools.length > 0) {
+      lines.push('### Other');
+      lines.push('');
+      appendTools(lines, uncategorizedTools, overview.toolStatuses);
+    }
   }
 
-  for (const tool of parsedTools) {
-    lines.push(`## ${tool.tool}`);
-    lines.push(`- Consolidated status: ${overview.toolStatuses[tool.tool] ?? 'unknown'}`);
+  return lines.join('\n').trim();
+}
+
+function appendTools(
+  lines: string[],
+  tools: ParsedToolSummary[],
+  toolStatuses: SummaryOverview['toolStatuses']
+): void {
+  for (const tool of tools) {
+    lines.push(`#### ${tool.tool}`);
+    lines.push(`- Consolidated status: ${toolStatuses[tool.tool] ?? 'unknown'}`);
     lines.push('');
     lines.push(tool.markdownContent);
     lines.push('');
   }
-
-  return lines.join('\n').trim();
 }

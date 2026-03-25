@@ -284,7 +284,7 @@ describe('generateSummary', () => {
     );
   });
 
-  it('renders categorized sections and appends uncategorized tools at the end', async () => {
+  it('renders categorized sections and groups uncategorized tools in Other', async () => {
     readTextFileMock.mockImplementation(async (filePath: string) => {
       if (filePath === '/in/depminer.md') {
         return ['---', 'tool: depminer', 'html-template: inline', 'status: success', '---', '<div id="depminer">depminer</div>', '---', '# depminer'].join('\n');
@@ -320,12 +320,25 @@ describe('generateSummary', () => {
       'summary.html',
       expect.stringContaining('<details class="category-group"><summary class="category-summary"><span class="category-title">Architecture</span><span class="category-count">2 tools</span></summary>')
     );
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.html',
+      expect.stringContaining('<details class="category-group"><summary class="category-summary"><span class="category-title">Other</span><span class="category-count">1 tool</span></summary>')
+    );
 
     const htmlOutput = writeTextFileMock.mock.calls.find(([filePath]) => filePath === 'summary.html')?.[1] as string;
     const categoryPos = htmlOutput.indexOf('<details class="category-group"><summary class="category-summary"><span class="category-title">Architecture</span><span class="category-count">2 tools</span></summary>');
-    const uncategorizedPos = htmlOutput.indexOf('<section class="summary-card tool-card tool-card-status-success"><div class="tool-card-header"><h2>jafax</h2><span class="status-pill status-success">success</span></div><div class="tool-content"><div id="jafax">jafax</div></div></section>');
+    const uncategorizedPos = htmlOutput.indexOf('<details class="category-group"><summary class="category-summary"><span class="category-title">Other</span><span class="category-count">1 tool</span></summary>');
     expect(categoryPos).toBeGreaterThan(-1);
     expect(uncategorizedPos).toBeGreaterThan(-1);
     expect(categoryPos).toBeLessThan(uncategorizedPos);
+
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      expect.stringContaining('## Tool Summaries\n\n### Architecture')
+    );
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      expect.stringContaining('### Other\n\n#### jafax\n- Consolidated status: success')
+    );
   });
 });
