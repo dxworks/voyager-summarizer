@@ -27,7 +27,7 @@ npx voyager-summarizer summary [options]
 | `--tool-md <name=path>` | yes | Tool id to Markdown summary mapping. |
 | `--tool-html <name=path>` | yes | Tool id to HTML template mapping (used when `html-template: reference` in the markdown metadata). |
 | `--tool-category <name=category>` | yes | Tool id to category name mapping for grouped output sections. |
-| `--tool-order-file <path>` | no | Path to file that defines tool order with `<tool-id>: <priority>` lines. |
+| `--tool-order-file <path>` | no | Path to JSON file that defines category order and per-category tool order. |
 | `--conditions-file <path>` | no | Path to JSON file containing rule definitions. |
 | `--condition <rules.<id>.<field>=value>` | yes | Inline override for one rule field. |
 | `--out-html <path>` | no | HTML output file path. Default: `summary.html`. |
@@ -195,28 +195,39 @@ Source of truth: `src/config/default-conditions.json`.
 
 ## Tool Order
 
-If `--tool-order-file` is not provided, default order is:
+If `--tool-order-file` is not provided, default order is loaded from
+`src/config/default-order.json`.
 
-1. `depminer`
-2. `dude`
-3. `honeydew`
-4. `insider`
-5. `inspector-git`
-6. `jafax`
-7. `lizard`
+Current defaults define category ordering only. Tool ordering defaults to alphabetical
+inside each category unless overridden through `toolOrder`.
 
 Tool order file format:
 
-```text
-# comments allowed
-insider: 10
-jafax: 20
-lizard: 30
+```json
+{
+  "categoryOrder": {
+    "Git History": 10,
+    "Technology Breakdown": 20,
+    "Structural Relationship": 30
+  },
+  "toolOrder": {
+    "inspector-git": 10,
+    "insider": 20,
+    "depminer": 30,
+    "dude": 40,
+    "honeydew": 50,
+    "jafax": 60,
+    "lizard": 70
+  }
+}
 ```
 
-- lower numeric priority comes first;
-- equal priorities keep file order;
-- tools present in input but missing from the order list are appended at the end.
+- lower numeric order comes first;
+- `categoryOrder` controls category sorting;
+- `toolOrder` controls tool sorting inside each category;
+- tools missing from `toolOrder` are appended alphabetically inside their category;
+- categories missing from `categoryOrder` are appended alphabetically;
+- when an override file is provided, it is merged with defaults.
 
 ## Scripts
 

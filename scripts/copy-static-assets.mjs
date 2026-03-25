@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 const rootDir = resolve(process.cwd());
 
 copyPath('src/config/default-conditions.json', 'dist/src/config/default-conditions.json');
+copyPath('src/config/default-order.json', 'dist/src/config/default-order.json');
 copyPath('src/render/templates', 'dist/src/render/templates');
 
 function copyPath(fromRelativePath, toRelativePath) {

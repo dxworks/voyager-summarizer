@@ -15,7 +15,7 @@ program
   .option('-m, --tool-md <name=path>', 'Tool name to Markdown file mapping (repeatable)', collectKeyValue, [])
   .option('-h, --tool-html <name=path>', 'Tool name to HTML file mapping (repeatable)', collectKeyValue, [])
   .option('--tool-category <name=category>', 'Tool name to category mapping (repeatable)', collectKeyValue, [])
-  .option('--tool-order-file <path d="">', 'File with tool ordering rules (<tool>: <priority>)')
+  .option('--tool-order-file <path d="">', 'JSON file with category and tool ordering rules')
   .option('-c, --conditions-file <path d="">', 'JSON file with condition rules')
   .option('--condition <rules.<id>.<field>=value>', 'Condition rule override (repeatable)', collectKeyValue, [])
   .option('--out-html <path d="">', 'Output path for HTML report')

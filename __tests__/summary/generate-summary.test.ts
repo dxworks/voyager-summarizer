@@ -119,10 +119,18 @@ describe('generateSummary', () => {
     );
   });
 
-  it('applies external tool order and appends tools missing from file order', async () => {
+  it('applies external category and tool order from json file', async () => {
     readTextFileMock.mockImplementation(async (filePath: string) => {
-      if (filePath === '/in/tool-order.txt') {
-        return ['jafax: 10', 'insider: 20'].join('\n');
+      if (filePath === '/in/tool-order.json') {
+        return JSON.stringify({
+          categoryOrder: {
+            Other: 1
+          },
+          toolOrder: {
+            jafax: 10,
+            insider: 20
+          }
+        });
       }
 
       if (filePath === '/in/jafax.md') {
@@ -153,7 +161,7 @@ describe('generateSummary', () => {
         ['jafax', '/in/jafax.md']
       ],
       toolHtml: [],
-      toolOrderFile: '/in/tool-order.txt',
+      toolOrderFile: '/in/tool-order.json',
       conditions: []
     });
 
@@ -161,12 +169,12 @@ describe('generateSummary', () => {
       'summary.md',
       expect.stringContaining('## Overview\n- jafax (success)\n- insider (success)\n- lizard (success)')
     );
-    expect(result.parseWarnings).toEqual(
-      expect.arrayContaining([expect.stringContaining('Appended tools not present in ordering list: lizard')])
+    expect(result.parseWarnings).not.toEqual(
+      expect.arrayContaining([expect.stringContaining('Appended tools not present in ordering list')])
     );
   });
 
-  it('appends tools missing from default order', async () => {
+  it('sorts tools alphabetically in Other when no category tool order exists', async () => {
     readTextFileMock.mockImplementation(async (filePath: string) => {
       if (filePath === '/in/insider.md') {
         return ['---', 'tool: insider', 'html-template: inline', 'status: success', '---', '<div>insider</div>', '---', '# insider'].join(
@@ -196,8 +204,64 @@ describe('generateSummary', () => {
       'summary.md',
       expect.stringContaining('## Overview\n- insider (success)\n- new-tool (success)')
     );
-    expect(result.parseWarnings).toEqual(
-      expect.arrayContaining([expect.stringContaining('Appended tools not present in ordering list: new-tool')])
+    expect(result.parseWarnings).not.toEqual(
+      expect.arrayContaining([expect.stringContaining('Appended tools not present in ordering list')])
+    );
+  });
+
+  it('applies default category order and per-category tool order', async () => {
+    readTextFileMock.mockImplementation(async (filePath: string) => {
+      if (filePath === '/in/insider.md') {
+        return ['---', 'tool: insider', 'html-template: inline', 'status: success', '---', '<div>insider</div>', '---', '# insider'].join(
+          '\n'
+        );
+      }
+
+      if (filePath === '/in/inspector-git.md') {
+        return ['---', 'tool: inspector-git', 'html-template: inline', 'status: success', '---', '<div>inspector-git</div>', '---', '# inspector-git'].join(
+          '\n'
+        );
+      }
+
+      if (filePath === '/in/jafax.md') {
+        return ['---', 'tool: jafax', 'html-template: inline', 'status: success', '---', '<div>jafax</div>', '---', '# jafax'].join(
+          '\n'
+        );
+      }
+
+      throw new Error(`Unexpected file path: ${filePath}`);
+    });
+
+    await generateSummary({
+      toolMd: [
+        ['jafax', '/in/jafax.md'],
+        ['insider', '/in/insider.md'],
+        ['inspector-git', '/in/inspector-git.md']
+      ],
+      toolHtml: [],
+      toolCategory: [
+        ['jafax', 'Structural Relationship'],
+        ['insider', 'Technology Breakdown'],
+        ['inspector-git', 'Git History']
+      ],
+      conditions: []
+    });
+
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      expect.stringContaining('## Overview\n- inspector-git (success)\n- insider (success)\n- jafax (success)')
+    );
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      expect.stringContaining('### Git History\n\n#### inspector-git')
+    );
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      expect.stringContaining('### Technology Breakdown\n\n#### insider')
+    );
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      expect.stringContaining('### Structural Relationship\n\n#### jafax')
     );
   });
 
