@@ -1,6 +1,6 @@
 import { ParsedToolSummary } from '../parsers/parse-tool-summary-md';
 import { evaluateDiagnostics } from './evaluate-diagnostics';
-import { DiagnosticFinding, ResolvedConditions, SummaryHealth, ToolStatus } from './summary-types';
+import { DiagnosticFinding, OverallStatus, ResolvedConditions, SummaryHealth, ToolStatus } from './summary-types';
 
 export interface SummaryOverview {
   toolNames: string[];
@@ -8,6 +8,7 @@ export interface SummaryOverview {
   diagnostics: DiagnosticFinding[];
   conditionWarnings: string[];
   health: SummaryHealth;
+  overallStatus: OverallStatus;
 }
 
 export function buildOverview(parsedTools: ParsedToolSummary[], conditions: ResolvedConditions): SummaryOverview {
@@ -20,7 +21,8 @@ export function buildOverview(parsedTools: ParsedToolSummary[], conditions: Reso
     toolStatuses,
     diagnostics: diagnosticsResult.findings,
     conditionWarnings: diagnosticsResult.warnings,
-    health: buildHealth(diagnosticsResult.findings)
+    health: buildHealth(diagnosticsResult.findings),
+    overallStatus: buildOverallStatus(parsedTools.map((tool) => tool.tool), diagnosticsResult.findings)
   };
 }
 
@@ -69,4 +71,83 @@ function buildHealth(diagnostics: DiagnosticFinding[]): SummaryHealth {
   }
 
   return { status: 'info', criticalCount, errorCount, warningCount };
+}
+
+function buildOverallStatus(toolNames: string[], diagnostics: DiagnosticFinding[]): OverallStatus {
+  const criticalDiagnostics = diagnostics.filter((item) => item.severity === 'critical');
+  if (criticalDiagnostics.length > 0) {
+    return {
+      level: 'critical',
+      title: 'Action Required',
+      message: 'Critical extraction issues were detected. Rerun the mission before starting analysis.',
+      affectedTools: getAffectedTools(toolNames, criticalDiagnostics)
+    };
+  }
+
+  const errorDiagnostics = diagnostics.filter((item) => item.severity === 'error');
+  if (errorDiagnostics.length > 0) {
+    const affectedTools = getAffectedTools(toolNames, errorDiagnostics);
+    const toolsLabel = affectedTools.join(', ');
+    const message = toolsLabel.length > 0
+      ? `Analysis can start, but some required outputs are missing for: ${toolsLabel}. See diagnostics below.`
+      : 'Analysis can start, but some required outputs are missing. See diagnostics below.';
+
+    return {
+      level: 'error',
+      title: 'Proceed with Caution',
+      message,
+      affectedTools
+    };
+  }
+
+  const warningDiagnostics = diagnostics.filter((item) => item.severity === 'warning');
+  if (warningDiagnostics.length > 0) {
+    return {
+      level: 'warning',
+      title: 'Partial Coverage',
+      message: 'Extraction completed, but some optional data may be incomplete.',
+      affectedTools: getAffectedTools(toolNames, warningDiagnostics)
+    };
+  }
+
+  return {
+    level: 'ok',
+    title: 'Ready for Analysis',
+    message: 'All required data was extracted successfully. You can proceed.',
+    affectedTools: []
+  };
+}
+
+function getAffectedTools(toolNames: string[], diagnostics: DiagnosticFinding[]): string[] {
+  const affectedToolsSet = new Set<string>();
+
+  for (const diagnostic of diagnostics) {
+    for (const toolName of diagnostic.triggeredBy) {
+      affectedToolsSet.add(toolName);
+    }
+  }
+
+  const toolNameOrder = new Map<string, number>();
+  toolNames.forEach((toolName, index) => {
+    toolNameOrder.set(toolName, index);
+  });
+
+  return [...affectedToolsSet].sort((left, right) => {
+    const leftOrder = toolNameOrder.get(left);
+    const rightOrder = toolNameOrder.get(right);
+
+    if (leftOrder === undefined && rightOrder === undefined) {
+      return left.localeCompare(right);
+    }
+
+    if (leftOrder === undefined) {
+      return 1;
+    }
+
+    if (rightOrder === undefined) {
+      return -1;
+    }
+
+    return leftOrder - rightOrder;
+  });
 }

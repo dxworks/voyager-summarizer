@@ -13,6 +13,13 @@ function makeParsedTool(tool: string, markdownContent: string, htmlTemplateConte
   };
 }
 
+const DEFAULT_OK_STATUS = {
+  level: 'ok' as const,
+  title: 'Ready for Analysis',
+  message: 'All required data was extracted successfully. You can proceed.',
+  affectedTools: []
+};
+
 describe('renderMarkdownSummary', () => {
   it('renders title and overview tool list', () => {
     const overview: SummaryOverview = {
@@ -32,6 +39,12 @@ describe('renderMarkdownSummary', () => {
         criticalCount: 0,
         errorCount: 1,
         warningCount: 0
+      },
+      overallStatus: {
+        level: 'error',
+        title: 'Proceed with Caution',
+        message: 'Analysis can start, but some required outputs are missing for: jafax. See diagnostics below.',
+        affectedTools: ['jafax']
       }
     };
     const parsedTools: ParsedToolSummary[] = [makeParsedTool('insider', '# Insider MD')];
@@ -39,6 +52,8 @@ describe('renderMarkdownSummary', () => {
     const output = renderMarkdownSummary(overview, parsedTools);
 
     expect(output).toContain('# Voyager Summary');
+    expect(output).toContain('## Overall Status');
+    expect(output).toContain('- Proceed with Caution: Analysis can start, but some required outputs are missing for: jafax. See diagnostics below.');
     expect(output).toContain('## Overview');
     expect(output).toContain('- insider (success)');
     expect(output).toContain('- jafax (failed)');
@@ -56,7 +71,8 @@ describe('renderMarkdownSummary', () => {
         criticalCount: 0,
         errorCount: 0,
         warningCount: 0
-      }
+      },
+      overallStatus: DEFAULT_OK_STATUS
     };
     const parsedTools: ParsedToolSummary[] = [
       makeParsedTool('insider', '## insider markdown'),
@@ -84,7 +100,8 @@ describe('renderMarkdownSummary', () => {
         criticalCount: 0,
         errorCount: 0,
         warningCount: 0
-      }
+      },
+      overallStatus: DEFAULT_OK_STATUS
     };
 
     const output = renderMarkdownSummary(overview, []);

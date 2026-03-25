@@ -29,3 +29,12 @@ export interface SummaryHealth {
   errorCount: number;
   warningCount: number;
 }
+
+export type OverallStatusLevel = 'critical' | 'error' | 'warning' | 'ok';
+
+export interface OverallStatus {
+  level: OverallStatusLevel;
+  title: string;
+  message: string;
+  affectedTools: string[];
+}

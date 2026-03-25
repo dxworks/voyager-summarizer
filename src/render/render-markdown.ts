@@ -2,7 +2,7 @@ import { ParsedToolSummary } from '../parsers/parse-tool-summary-md';
 import { SummaryOverview } from '../summary/build-overview';
 
 export function renderMarkdownSummary(overview: SummaryOverview, parsedTools: ParsedToolSummary[]): string {
-  const lines: string[] = ['# Voyager Summary', '', '## Overview'];
+  const lines: string[] = ['# Voyager Summary', '', '## Overall Status', `- ${overview.overallStatus.title}: ${overview.overallStatus.message}`, '', '## Overview'];
 
   for (const toolName of overview.toolNames) {
     lines.push(`- ${toolName} (${overview.toolStatuses[toolName] ?? 'unknown'})`);

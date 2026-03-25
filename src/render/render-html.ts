@@ -20,9 +20,16 @@ export function renderHtmlSummary(overview: SummaryOverview, parsedTools: Parsed
           )
           .join('');
   const toolSections = renderToolSections(parsedTools);
+  const overallStatusTools = overview.overallStatus.affectedTools.length > 0
+    ? `<p class="overall-status-tools">Affected tools: ${escapeHtml(overview.overallStatus.affectedTools.join(', '))}</p>`
+    : '';
 
   return applyTemplate(defaultSummaryTemplate, {
     STYLES: defaultSummaryStyles,
+    OVERALL_STATUS_CLASS: overview.overallStatus.level,
+    OVERALL_STATUS_TITLE: escapeHtml(overview.overallStatus.title),
+    OVERALL_STATUS_MESSAGE: escapeHtml(overview.overallStatus.message),
+    OVERALL_STATUS_TOOLS: overallStatusTools,
     OVERVIEW_ITEMS: overviewItems,
     HEALTH_STATUS_CLASS: overview.health.status,
     HEALTH_STATUS_LABEL: escapeHtml(overview.health.status),

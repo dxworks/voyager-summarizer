@@ -51,6 +51,42 @@
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 14px;
     }
+    .overall-status {
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+      background: var(--panel);
+    }
+    .overall-status h2 {
+      margin: 0 0 6px;
+      font-size: 1.1rem;
+    }
+    .overall-status p {
+      margin: 0;
+    }
+    .overall-status-tools {
+      margin-top: 8px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .overall-status-critical {
+      border-left: 6px solid var(--critical);
+      background: #f9e8ea;
+    }
+    .overall-status-error {
+      border-left: 6px solid var(--error);
+      background: #fdecea;
+    }
+    .overall-status-warning {
+      border-left: 6px solid var(--warning);
+      background: #fff3e3;
+    }
+    .overall-status-ok {
+      border-left: 6px solid var(--success);
+      background: #e9f7ef;
+    }
     .summary-card {
       background: var(--panel);
       border: 1px solid var(--line);

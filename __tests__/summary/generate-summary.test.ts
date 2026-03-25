@@ -41,7 +41,7 @@ describe('generateSummary', () => {
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.md',
-      expect.stringContaining('# Voyager Summary\n\n## Overview\n- insider (success)')
+      expect.stringContaining('# Voyager Summary\n\n## Overall Status\n- Ready for Analysis: All required data was extracted successfully. You can proceed.')
     );
     expect(result.parsedToolsCount).toBe(1);
     expect(result.parseWarnings).toEqual(
