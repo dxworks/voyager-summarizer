@@ -5,7 +5,8 @@ import { renderHtmlSummary } from '../render/render-html';
 import { buildOverview } from './build-overview';
 import { resolveConditions } from './resolve-conditions';
 import { resolveToolOrder, ResolvedToolOrder } from './resolve-tool-order';
-import { ResolvedConditions } from './summary-types';
+import { ResolvedConditions, ToolStatus } from './summary-types';
+import { normalizeToolKey, readMissionRunOverview } from './read-mission-run-overview';
 
 const DEFAULT_OUT_HTML = 'summary.html';
 const DEFAULT_OUT_MD = 'summary.md';
@@ -17,6 +18,7 @@ export interface GenerateSummaryInput {
   conditionsFile?: string;
   conditions: Array<[string, string]>;
   toolOrderFile?: string;
+  missionReportLogPath?: string;
   outHtml?: string;
   outMd?: string;
 }
@@ -31,7 +33,11 @@ export interface GenerateSummaryResult {
 export async function generateSummary(input: GenerateSummaryInput): Promise<GenerateSummaryResult> {
   const conditions = await resolveConditions(input.conditionsFile, input.conditions);
   const toolOrder = await resolveToolOrder(input.toolOrderFile);
-  const parsed = await parseToolSummaries(input.toolMd, input.toolHtml, input.toolCategory ?? []);
+  const runOverview = await readMissionRunOverview(
+    input.toolMd.map(([tool]) => tool),
+    input.missionReportLogPath
+  );
+  const parsed = await parseToolSummaries(input.toolMd, input.toolHtml, input.toolCategory ?? [], runOverview);
   const parsedTools = parsed.parsedTools;
   const ordering = orderTools(parsedTools, toolOrder);
   const content = buildReportContent(ordering.orderedTools, conditions);
@@ -41,7 +47,7 @@ export async function generateSummary(input: GenerateSummaryInput): Promise<Gene
 
   return {
     parsedToolsCount: parsedTools.length,
-    parseWarnings: [...parsed.warnings, ...ordering.warnings, ...content.overviewWarnings],
+    parseWarnings: [...runOverview.warnings, ...parsed.warnings, ...ordering.warnings, ...content.overviewWarnings],
     writtenHtmlPath: writtenPaths.writtenHtmlPath,
     writtenMdPath: writtenPaths.writtenMdPath
   };
@@ -71,7 +77,8 @@ interface OrderToolsResult {
 async function parseToolSummaries(
   toolMd: Array<[string, string]>,
   toolHtml: Array<[string, string]>,
-  toolCategory: Array<[string, string]>
+  toolCategory: Array<[string, string]>,
+  runOverview: Awaited<ReturnType<typeof readMissionRunOverview>>
 ): Promise<ParsedToolSummariesResult> {
   const htmlByTool = new Map<string, string>(
     toolHtml
@@ -111,6 +118,7 @@ async function parseToolSummaries(
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       warnings.push(`Unable to parse ${tool} summary from ${mdPath}: ${message}`);
+      parsedTools.push(buildFallbackParsedTool(tool, categoryByTool.get(tool), runOverview, message));
     }
   }
 
@@ -118,6 +126,50 @@ async function parseToolSummaries(
     parsedTools,
     warnings
   };
+}
+
+function buildFallbackParsedTool(
+  tool: string,
+  category: string | undefined,
+  runOverview: Awaited<ReturnType<typeof readMissionRunOverview>>,
+  parseError: string
+): ParsedToolSummary {
+  const normalizedTool = normalizeToolKey(tool);
+  const status: ToolStatus = runOverview.hasOverview
+    ? runOverview.executedTools.has(normalizedTool)
+      ? 'missing'
+      : 'not-run'
+    : 'unknown';
+
+  const message = status === 'not-run'
+    ? 'No tool summary was produced because the tool was not run in the mission execution overview.'
+    : 'The tool appears to have run, but the summary output is missing or unreadable.';
+
+  return {
+    tool,
+    category: normalizeOptionalCategory(category),
+    metadata: {
+      status,
+      'html-template': 'inline'
+    },
+    htmlTemplateMode: 'inline',
+    htmlTemplateContent: `<div class="missing-summary"><p>${escapeHtml(message)}</p><p>Details: ${escapeHtml(parseError)}</p></div>`,
+    htmlTemplateAvailable: true,
+    markdownContent: [
+      message,
+      '',
+      `Details: ${parseError}`
+    ].join('\n')
+  };
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function normalizeOptionalPath(filePath: string): string {

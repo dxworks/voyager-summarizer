@@ -115,7 +115,7 @@ describe('buildOverview', () => {
     const overview = buildOverview(parsedTools, DEFAULT_CONDITIONS);
 
     expect(overview.toolStatuses).toEqual({ honeydew: 'missing' });
-    expect(overview.overallStatus.level).toBe('ok');
+    expect(overview.overallStatus.level).toBe('error');
   });
 
   it('returns critical overall status when critical diagnostics exist', () => {

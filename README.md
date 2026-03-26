@@ -28,6 +28,7 @@ npx voyager-summarizer summary [options]
 | `--tool-html <name=path>` | yes | Tool id to HTML template mapping (used when `html-template: reference` in the markdown metadata). |
 | `--tool-category <name=category>` | yes | Tool id to category name mapping for grouped output sections. |
 | `--tool-order-file <path>` | no | Path to JSON file that defines category order and per-category tool order. |
+| `--mission-report-log <path>` | no | Path to `mission-report.log` used to distinguish `missing` vs `not-run` tools. |
 | `--conditions-file <path>` | no | Path to JSON file containing rule definitions. |
 | `--condition <rules.<id>.<field>=value>` | yes | Inline override for one rule field. |
 | `--out-html <path>` | no | HTML output file path. Default: `summary.html`. |
@@ -110,7 +111,7 @@ Fields:
 - `when` (required): expression to evaluate.
 - `variables` (optional): placeholder-to-metadata-path mapping.
 - `triggeredBy` (optional): list of tool ids associated with the finding.
-- `setStatus` (optional): override status for each tool in `triggeredBy` (`success`, `failed`, `partial`, `missing`, `unknown`).
+- `setStatus` (optional): override status for each tool in `triggeredBy` (`success`, `failed`, `partial`, `missing`, `not-run`, `unknown`).
 
 `onMissing` is deprecated and rejected.
 

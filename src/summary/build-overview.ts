@@ -15,14 +15,16 @@ export function buildOverview(parsedTools: ParsedToolSummary[], conditions: Reso
   const diagnosticsResult = evaluateDiagnostics(parsedTools, conditions);
   const toolStatuses = buildToolStatuses(parsedTools);
   applyStatusOverrides(toolStatuses, diagnosticsResult.overriddenToolStatuses);
+  const inferredDiagnostics = buildInferredDiagnostics(parsedTools.map((tool) => tool.tool), toolStatuses);
+  const diagnostics = [...diagnosticsResult.findings, ...inferredDiagnostics];
 
   return {
     toolNames: parsedTools.map((tool) => tool.tool),
     toolStatuses,
-    diagnostics: diagnosticsResult.findings,
+    diagnostics,
     conditionWarnings: diagnosticsResult.warnings,
-    health: buildHealth(diagnosticsResult.findings),
-    overallStatus: buildOverallStatus(parsedTools.map((tool) => tool.tool), diagnosticsResult.findings)
+    health: buildHealth(diagnostics),
+    overallStatus: buildOverallStatus(parsedTools.map((tool) => tool.tool), diagnostics)
   };
 }
 
@@ -46,11 +48,42 @@ function buildToolStatuses(parsedTools: ParsedToolSummary[]): Record<string, Too
 }
 
 function normalizeToolStatus(status: string | undefined): ToolStatus {
-  if (status === 'success' || status === 'failed' || status === 'partial' || status === 'missing' || status === 'unknown') {
+  if (status === 'success' || status === 'failed' || status === 'partial' || status === 'missing' || status === 'not-run' || status === 'unknown') {
     return status;
   }
 
   return 'unknown';
+}
+
+function buildInferredDiagnostics(
+  toolNames: string[],
+  toolStatuses: Record<string, ToolStatus>
+): DiagnosticFinding[] {
+  const diagnostics: DiagnosticFinding[] = [];
+
+  for (const toolName of toolNames) {
+    const status = toolStatuses[toolName] ?? 'unknown';
+    if (status === 'missing') {
+      diagnostics.push({
+        severity: 'error',
+        code: `${toolName}-summary-missing`,
+        message: `${toolName} summary output is missing although the tool appears to have been executed.`,
+        triggeredBy: [toolName]
+      });
+      continue;
+    }
+
+    if (status === 'not-run') {
+      diagnostics.push({
+        severity: 'warning',
+        code: `${toolName}-not-run`,
+        message: `${toolName} did not run in the mission execution overview.`,
+        triggeredBy: [toolName]
+      });
+    }
+  }
+
+  return diagnostics;
 }
 
 function buildHealth(diagnostics: DiagnosticFinding[]): SummaryHealth {

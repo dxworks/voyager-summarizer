@@ -289,12 +289,57 @@ describe('generateSummary', () => {
       conditions: []
     });
 
-    expect(result.parsedToolsCount).toBe(1);
+    expect(result.parsedToolsCount).toBe(2);
     expect(result.parseWarnings).toEqual(
       expect.arrayContaining([
         expect.stringContaining('Unable to parse jafax summary from /in/bad.md'),
         expect.stringContaining("Skipped rule 'lizard-failed' due to missing metadata values")
       ])
+    );
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      expect.stringContaining('jafax (unknown)')
+    );
+  });
+
+  it('marks unreadable summary as not-run when mission report indicates tool did not run', async () => {
+    readTextFileMock.mockImplementation(async (filePath: string) => {
+      if (filePath === '/in/mission-report.log') {
+        return [
+          'header',
+          '------------------- Mission Summary -------------------',
+          '-------- insider --------',
+          'extract ... SUCCESS [ 0.1 s ]',
+          '_______________________container_______________________'
+        ].join('\n');
+      }
+
+      if (filePath === '/in/insider.md') {
+        return ['---', 'tool: insider', 'html-template: inline', 'status: success', '---', '<div>insider</div>', '---', '# insider'].join(
+          '\n'
+        );
+      }
+
+      if (filePath === '/in/bad.md') {
+        return 'invalid-content';
+      }
+
+      throw new Error(`Unexpected file path: ${filePath}`);
+    });
+
+    await generateSummary({
+      toolMd: [
+        ['insider', '/in/insider.md'],
+        ['jafax', '/in/bad.md']
+      ],
+      toolHtml: [],
+      missionReportLogPath: '/in/mission-report.log',
+      conditions: []
+    });
+
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      expect.stringContaining('jafax (not-run)')
     );
   });
 

@@ -65,6 +65,10 @@ describe('renderHtmlSummary', () => {
     expect(output).toContain('<h2>Proceed with Caution</h2>');
     expect(output).toContain('<p>Analysis can start, but some required outputs are missing for: jafax. See diagnostics below.</p>');
     expect(output).toContain('<h2>Overview</h2>');
+    expect(output).not.toContain('<h2>Health</h2>');
+    expect(output).toContain('<span class="metric-chip">Critical: 0</span>');
+    expect(output).toContain('<span class="metric-chip">Errors: 1</span>');
+    expect(output).toContain('<span class="metric-chip">Warnings: 0</span>');
     expect(output).toContain('<ul class="overview-list"><li class="overview-item"><span class="tool-name">insider</span><span class="status-pill status-success">success</span></li><li class="overview-item"><span class="tool-name">jafax</span><span class="status-pill status-failed">failed</span></li></ul>');
     expect(output).toContain('<h2>Diagnostics</h2>');
     expect(output).toContain('<span class="diagnostic-severity">error</span>');

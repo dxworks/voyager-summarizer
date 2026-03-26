@@ -16,6 +16,7 @@ program
   .option('-h, --tool-html <name=path>', 'Tool name to HTML file mapping (repeatable)', collectKeyValue, [])
   .option('--tool-category <name=category>', 'Tool name to category mapping (repeatable)', collectKeyValue, [])
   .option('--tool-order-file <path d="">', 'JSON file with category and tool ordering rules')
+  .option('--mission-report-log <path d="">', 'Path to mission-report.log from client mission archive')
   .option('-c, --conditions-file <path d="">', 'JSON file with condition rules')
   .option('--condition <rules.<id>.<field>=value>', 'Condition rule override (repeatable)', collectKeyValue, [])
   .option('--out-html <path d="">', 'Output path for HTML report')
@@ -29,6 +30,7 @@ program
       toolHtml: options.toolHtml,
       toolCategory: options.toolCategory,
       toolOrderFile: options.toolOrderFile,
+      missionReportLogPath: options.missionReportLog,
       conditionsFile: options.conditionsFile,
       conditions: options.condition,
       outHtml: options.outHtml,

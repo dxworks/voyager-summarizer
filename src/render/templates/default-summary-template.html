@@ -21,17 +21,15 @@
     </section>
     <div class="summary-grid">
       <section class="summary-card">
-        <h2>Overview</h2>
-        <ul class="overview-list">{{OVERVIEW_ITEMS}}</ul>
-      </section>
-      <section class="summary-card">
-        <h2>Health</h2>
-        <p class="health-status">Status <span class="status-pill status-{{HEALTH_STATUS_CLASS}}">{{HEALTH_STATUS_LABEL}}</span></p>
-        <div class="health-metrics">
-          <span class="metric-chip">Critical: {{HEALTH_CRITICAL}}</span>
-          <span class="metric-chip">Errors: {{HEALTH_ERRORS}}</span>
-          <span class="metric-chip">Warnings: {{HEALTH_WARNINGS}}</span>
+        <div class="overview-header">
+          <h2>Overview</h2>
+          <div class="health-metrics">
+            <span class="metric-chip">Critical: {{HEALTH_CRITICAL}}</span>
+            <span class="metric-chip">Errors: {{HEALTH_ERRORS}}</span>
+            <span class="metric-chip">Warnings: {{HEALTH_WARNINGS}}</span>
+          </div>
         </div>
+        <ul class="overview-list">{{OVERVIEW_ITEMS}}</ul>
       </section>
     </div>
     <section class="summary-card">

@@ -31,8 +31,6 @@ export function renderHtmlSummary(overview: SummaryOverview, parsedTools: Parsed
     OVERALL_STATUS_MESSAGE: escapeHtml(overview.overallStatus.message),
     OVERALL_STATUS_TOOLS: overallStatusTools,
     OVERVIEW_ITEMS: overviewItems,
-    HEALTH_STATUS_CLASS: overview.health.status,
-    HEALTH_STATUS_LABEL: escapeHtml(overview.health.status),
     HEALTH_CRITICAL: String(overview.health.criticalCount),
     HEALTH_ERRORS: String(overview.health.errorCount),
     HEALTH_WARNINGS: String(overview.health.warningCount),

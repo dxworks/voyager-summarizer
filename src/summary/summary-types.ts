@@ -1,4 +1,4 @@
-export type ToolStatus = 'success' | 'failed' | 'partial' | 'missing' | 'unknown';
+export type ToolStatus = 'success' | 'failed' | 'partial' | 'missing' | 'not-run' | 'unknown';
 
 export type DiagnosticSeverity = 'critical' | 'error' | 'warning' | 'info';
 
