@@ -221,19 +221,77 @@
       padding-bottom: 8px;
       margin-bottom: 10px;
     }
+    .tool-card {
+      padding: 0;
+    }
     .tool-card .tool-card-header {
+      cursor: pointer;
+      list-style: none;
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
       border-bottom: 1px solid var(--line);
-      padding-bottom: 8px;
-      margin-bottom: 10px;
+      padding: 12px 14px;
+      margin: 0;
     }
+    .tool-card .tool-card-header::-webkit-details-marker { display: none; }
+    .tool-card:not([open]) .tool-card-header { border-bottom: none; }
     .tool-card .tool-card-header h2 {
       border-bottom: none;
       padding-bottom: 0;
       margin-bottom: 0;
+    }
+    .tool-card .tool-content {
+      padding: 12px 14px 14px;
+    }
+    .tool-card .tool-content table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+    .tool-card .tool-content thead th {
+      background: #edf4f3;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 9px 12px;
+      border: none;
+      box-shadow: inset 0 -1px 0 rgba(19, 48, 42, 0.1);
+    }
+    .tool-card .tool-content thead th:first-child {
+      border-radius: 10px 0 0 10px;
+    }
+    .tool-card .tool-content thead th:last-child {
+      border-radius: 0 10px 10px 0;
+    }
+    .tool-card .tool-content tbody td {
+      background: #f9fcfb;
+      padding: 10px 12px;
+      border: none;
+      vertical-align: top;
+      transition: background-color 140ms ease;
+    }
+    .tool-card .tool-content tbody td:first-child {
+      border-radius: 10px 0 0 10px;
+    }
+    .tool-card .tool-content tbody td:last-child {
+      border-radius: 0 10px 10px 0;
+    }
+    .tool-card .tool-content tbody tr {
+      transition: transform 160ms ease, filter 160ms ease;
+    }
+    .tool-card .tool-content tbody tr:hover {
+      transform: translateY(-1px);
+      filter: drop-shadow(0 8px 14px rgba(19, 48, 42, 0.12));
+    }
+    .tool-card .tool-content tbody tr:hover td {
+      background: #ffffff;
     }
     .tool-card-status-success { border-left: 4px solid var(--success); }
     .tool-card-status-failed { border-left: 4px solid var(--error); }
@@ -255,4 +313,12 @@
       .summary-header { padding: 16px; }
       .summary-card { padding: 14px; }
       .overview-header { align-items: flex-start; flex-direction: column; }
+      .tool-card .tool-content table {
+        border-spacing: 0 6px;
+        font-size: 0.9rem;
+      }
+      .tool-card .tool-content thead th,
+      .tool-card .tool-content tbody td {
+        padding: 8px 9px;
+      }
     }

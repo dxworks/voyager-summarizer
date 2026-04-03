@@ -376,15 +376,15 @@ describe('generateSummary', () => {
 
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<section class="summary-card tool-card tool-card-status-success"><div class="tool-card-header"><h2>jafax</h2><span class="status-pill status-success">success</span></div><div class="tool-content"><div>jafax</div></div></section>')
+      expect.stringContaining('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>jafax</h2><span class="status-pill status-success">success</span></summary><div class="tool-content"><div>jafax</div></div></details>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<section class="summary-card tool-card tool-card-status-success"><div class="tool-card-header"><h2>insider</h2><span class="status-pill status-success">success</span></div><div class="tool-content"><div>insider</div></div></section>')
+      expect.stringContaining('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>insider</h2><span class="status-pill status-success">success</span></summary><div class="tool-content"><div>insider</div></div></details>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.not.stringContaining('<section class="summary-card tool-card tool-card-status-success"><div class="tool-card-header"><h2>lizard</h2>')
+      expect.not.stringContaining('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>lizard</h2>')
     );
     expect(result.parseWarnings).toEqual(
       expect.arrayContaining([

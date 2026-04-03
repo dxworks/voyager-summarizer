@@ -91,7 +91,7 @@ function renderToolSections(parsedTools: ParsedToolSummary[], toolStatuses: Summ
 }
 
 function renderToolCard(tool: ParsedToolSummary, status: string): string {
-  return `<section class="summary-card tool-card tool-card-status-${escapeHtml(status)}"><div class="tool-card-header"><h2>${escapeHtml(tool.tool)}</h2><span class="status-pill status-${escapeHtml(status)}">${escapeHtml(status)}</span></div><div class="tool-content">${tool.htmlTemplateContent}</div></section>`;
+  return `<details class="summary-card tool-card tool-card-status-${escapeHtml(status)}" open><summary class="tool-card-header"><h2>${escapeHtml(tool.tool)}</h2><span class="status-pill status-${escapeHtml(status)}">${escapeHtml(status)}</span></summary><div class="tool-content">${tool.htmlTemplateContent}</div></details>`;
 }
 
 function applyTemplate(template: string, replacements: Record<string, string>): string {
