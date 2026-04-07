@@ -37,7 +37,7 @@ describe('generateSummary', () => {
 
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<ul class="overview-list"><li class="overview-item"><span class="tool-name">insider</span><span class="status-pill status-success">success</span></li></ul>')
+      expect.stringContaining('<ul class="overview-list"><li class="overview-item"><span class="tool-name">insider</span><span class="overview-item-meta"><span class="status-pill status-success">success</span></span></li></ul>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.md',
@@ -74,7 +74,7 @@ describe('generateSummary', () => {
 
     expect(writeTextFileMock).toHaveBeenCalledWith(
       '/out/custom-summary.html',
-      expect.stringContaining('<ul class="overview-list"><li class="overview-item"><span class="tool-name">jafax</span><span class="status-pill status-success">success</span></li></ul>')
+      expect.stringContaining('<ul class="overview-list"><li class="overview-item"><span class="tool-name">jafax</span><span class="overview-item-meta"><span class="status-pill status-success">success</span></span></li></ul>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       '/out/custom-summary.md',
@@ -111,7 +111,7 @@ describe('generateSummary', () => {
     expect(result.parsedToolsCount).toBe(2);
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<ul class="overview-list"><li class="overview-item"><span class="tool-name">insider</span><span class="status-pill status-success">success</span></li><li class="overview-item"><span class="tool-name">lizard</span><span class="status-pill status-success">success</span></li></ul>')
+      expect.stringContaining('<ul class="overview-list"><li class="overview-item"><span class="tool-name">insider</span><span class="overview-item-meta"><span class="status-pill status-success">success</span></span></li><li class="overview-item"><span class="tool-name">lizard</span><span class="overview-item-meta"><span class="status-pill status-success">success</span></span></li></ul>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.md',
@@ -302,15 +302,17 @@ describe('generateSummary', () => {
     );
   });
 
-  it('marks unreadable summary as not-run when mission report indicates tool did not run', async () => {
+  it('marks unreadable summary as not-run when mission lock indicates tool did not run', async () => {
     readTextFileMock.mockImplementation(async (filePath: string) => {
-      if (filePath === '/in/mission-report.log') {
+      if (filePath === '/in/voyager.lock.yml') {
         return [
-          'header',
-          '------------------- Mission Summary -------------------',
-          '-------- insider --------',
-          'extract ... SUCCESS [ 0.1 s ]',
-          '_______________________container_______________________'
+          'mission: test-mission',
+          'runningTime: 1.1s',
+          'tools:',
+          '  - id: insider',
+          '    name: insider',
+          '    version: 1.0.0',
+          '    runningTime: 0.1s'
         ].join('\n');
       }
 
@@ -333,13 +335,61 @@ describe('generateSummary', () => {
         ['jafax', '/in/bad.md']
       ],
       toolHtml: [],
-      missionReportLogPath: '/in/mission-report.log',
+      missionLockFilePath: '/in/voyager.lock.yml',
       conditions: []
     });
 
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.md',
       expect.stringContaining('jafax (not-run)')
+    );
+  });
+
+  it('prefers metadata tool-version over mission lock version', async () => {
+    readTextFileMock.mockImplementation(async (filePath: string) => {
+      if (filePath === '/in/voyager.lock.yml') {
+        return [
+          'mission: test-mission',
+          'runningTime: 1.1s',
+          'tools:',
+          '  - id: blackduck',
+          '    name: blackduck',
+          '    version: 1.0.0',
+          '    runningTime: 0.2s'
+        ].join('\n');
+      }
+
+      if (filePath === '/in/blackduck.md') {
+        return [
+          '---',
+          'tool: blackduck',
+          'html-template: inline',
+          'status: success',
+          'tool-version: 11.1.0',
+          '---',
+          '<div>blackduck</div>',
+          '---',
+          '# blackduck'
+        ].join('\n');
+      }
+
+      throw new Error(`Unexpected file path: ${filePath}`);
+    });
+
+    await generateSummary({
+      toolMd: [['blackduck', '/in/blackduck.md']],
+      toolHtml: [],
+      missionLockFilePath: '/in/voyager.lock.yml',
+      conditions: []
+    });
+
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      expect.stringContaining('- blackduck (success) - v11.1.0 - Elapsed: 0.2s')
+    );
+    expect(writeTextFileMock).toHaveBeenCalledWith(
+      'summary.md',
+      expect.not.stringContaining('- blackduck (success) - v1.0.0 - Elapsed: 0.2s')
     );
   });
 
@@ -376,11 +426,11 @@ describe('generateSummary', () => {
 
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>jafax</h2><span class="status-pill status-success">success</span></summary><div class="tool-content"><div>jafax</div></div></details>')
+      expect.stringContaining('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>jafax</h2><span class="tool-card-header-meta"><span class="status-pill status-success">success</span></span></summary><div class="tool-content"><div>jafax</div></div></details>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',
-      expect.stringContaining('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>insider</h2><span class="status-pill status-success">success</span></summary><div class="tool-content"><div>insider</div></div></details>')
+      expect.stringContaining('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>insider</h2><span class="tool-card-header-meta"><span class="status-pill status-success">success</span></span></summary><div class="tool-content"><div>insider</div></div></details>')
     );
     expect(writeTextFileMock).toHaveBeenCalledWith(
       'summary.html',

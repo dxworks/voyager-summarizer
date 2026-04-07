@@ -151,4 +151,37 @@ describe('renderMarkdownSummary', () => {
     expect(output).not.toContain('## Tool Summaries');
     expect(output).not.toContain('#### insider\n');
   });
+
+  it('renders elapsed label clearly in overview and tool details', () => {
+    const overview: SummaryOverview = {
+      toolNames: ['jafax'],
+      toolStatuses: { jafax: 'success' },
+      diagnostics: [],
+      conditionWarnings: [],
+      health: {
+        status: 'info',
+        criticalCount: 0,
+        errorCount: 0,
+        warningCount: 0
+      },
+      overallStatus: DEFAULT_OK_STATUS
+    };
+
+    const parsedTools: ParsedToolSummary[] = [
+      {
+        tool: 'jafax',
+        metadata: { 'html-template': 'inline', version: '1.2.5', runningTime: '0.7s' },
+        htmlTemplateMode: 'inline',
+        htmlTemplateContent: '<div>jafax</div>',
+        htmlTemplateAvailable: true,
+        markdownContent: 'jafax md'
+      }
+    ];
+
+    const output = renderMarkdownSummary(overview, parsedTools);
+
+    expect(output).toContain('- jafax (success) - v1.2.5 - Elapsed: 0.7s');
+    expect(output).toContain('- Version: 1.2.5');
+    expect(output).toContain('- Elapsed time: 0.7s');
+  });
 });

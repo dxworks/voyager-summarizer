@@ -28,11 +28,27 @@ npx voyager-summarizer summary [options]
 | `--tool-html <name=path>` | yes | Tool id to HTML template mapping (used when `html-template: reference` in the markdown metadata). |
 | `--tool-category <name=category>` | yes | Tool id to category name mapping for grouped output sections. |
 | `--tool-order-file <path>` | no | Path to JSON file that defines category order and per-category tool order. |
-| `--mission-report-log <path>` | no | Path to `mission-report.log` used to distinguish `missing` vs `not-run` tools. |
+| `--mission-lock-file <path>` | no | Path to `voyager.lock.yml` used to distinguish `missing` vs `not-run` tools and to show tool version/runtime next to status. |
 | `--conditions-file <path>` | no | Path to JSON file containing rule definitions. |
 | `--condition <rules.<id>.<field>=value>` | yes | Inline override for one rule field. |
 | `--out-html <path>` | no | HTML output file path. Default: `summary.html`. |
 | `--out-md <path>` | no | Markdown output file path. Default: `summary.md`. |
+
+### Reading from zip archives
+
+Any option that accepts a file path also accepts zip-entry paths using:
+
+`<archive.zip>::<entry/path/inside/archive>`
+
+Example:
+
+```bash
+npx voyager-summarizer summary \
+  --mission-lock-file "C:\\Endava\\EndevLocal\\Voyager2\\voyager-results.zip::voyager.lock.yml" \
+  --tool-md insider="C:\\Endava\\EndevLocal\\Voyager2\\voyager-results.zip::insider-summary.md"
+```
+
+Use `/` for paths inside the archive. Backslashes in archive entry paths are also accepted.
 
 ## Examples
 

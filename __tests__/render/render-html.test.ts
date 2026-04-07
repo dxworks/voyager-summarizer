@@ -69,7 +69,7 @@ describe('renderHtmlSummary', () => {
     expect(output).toContain('<span class="metric-chip">Critical: 0</span>');
     expect(output).toContain('<span class="metric-chip">Errors: 1</span>');
     expect(output).toContain('<span class="metric-chip">Warnings: 0</span>');
-    expect(output).toContain('<ul class="overview-list"><li class="overview-item"><span class="tool-name">insider</span><span class="status-pill status-success">success</span></li><li class="overview-item"><span class="tool-name">jafax</span><span class="status-pill status-failed">failed</span></li></ul>');
+    expect(output).toContain('<ul class="overview-list"><li class="overview-item"><span class="tool-name">insider</span><span class="overview-item-meta"><span class="status-pill status-success">success</span></span></li><li class="overview-item"><span class="tool-name">jafax</span><span class="overview-item-meta"><span class="status-pill status-failed">failed</span></span></li></ul>');
     expect(output).toContain('<h2>Diagnostics</h2>');
     expect(output).toContain('<span class="diagnostic-severity">error</span>');
   });
@@ -95,8 +95,8 @@ describe('renderHtmlSummary', () => {
 
     const output = renderHtmlSummary(overview, parsedTools);
 
-    const insiderPos = output.indexOf('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>insider</h2><span class="status-pill status-success">success</span></summary><div class="tool-content"><div id="insider">insider</div></div></details>');
-    const lizardPos = output.indexOf('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>lizard</h2><span class="status-pill status-success">success</span></summary><div class="tool-content"><div id="lizard">lizard</div></div></details>');
+    const insiderPos = output.indexOf('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>insider</h2><span class="tool-card-header-meta"><span class="status-pill status-success">success</span></span></summary><div class="tool-content"><div id="insider">insider</div></div></details>');
+    const lizardPos = output.indexOf('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>lizard</h2><span class="tool-card-header-meta"><span class="status-pill status-success">success</span></span></summary><div class="tool-content"><div id="lizard">lizard</div></div></details>');
 
     expect(insiderPos).toBeGreaterThan(-1);
     expect(lizardPos).toBeGreaterThan(-1);
@@ -120,7 +120,7 @@ describe('renderHtmlSummary', () => {
 
     const output = renderHtmlSummary(overview, []);
 
-    expect(output).toContain('<span class="tool-name">insider</span><span class="status-pill status-unknown">unknown</span>');
+    expect(output).toContain('<span class="tool-name">insider</span><span class="overview-item-meta"><span class="status-pill status-unknown">unknown</span></span>');
     expect(output).not.toContain('<details class="summary-card tool-card tool-card-status-unknown" open><summary class="tool-card-header"><h2>insider</h2>');
   });
 
@@ -147,8 +147,8 @@ describe('renderHtmlSummary', () => {
 
     const output = renderHtmlSummary(overview, parsedTools);
 
-    expect(output).toContain('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>jafax</h2><span class="status-pill status-success">success</span></summary><div class="tool-content"><div id="jafax">jafax</div></div></details>');
-    expect(output).toContain('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>insider</h2><span class="status-pill status-success">success</span></summary><div class="tool-content"><div id="insider">insider</div></div></details>');
+    expect(output).toContain('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>jafax</h2><span class="tool-card-header-meta"><span class="status-pill status-success">success</span></span></summary><div class="tool-content"><div id="jafax">jafax</div></div></details>');
+    expect(output).toContain('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>insider</h2><span class="tool-card-header-meta"><span class="status-pill status-success">success</span></span></summary><div class="tool-content"><div id="insider">insider</div></div></details>');
     expect(output).not.toContain('<details class="summary-card tool-card tool-card-status-success" open><summary class="tool-card-header"><h2>lizard</h2>');
   });
 
@@ -202,8 +202,8 @@ describe('renderHtmlSummary', () => {
 
     const output = renderHtmlSummary(overview, [makeParsedTool('jafax', '<div>jafax</div>')]);
 
-    expect(output).toContain('<span class="tool-name">jafax</span><span class="status-pill status-missing">missing</span>');
-    expect(output).toContain('<details class="summary-card tool-card tool-card-status-missing" open><summary class="tool-card-header"><h2>jafax</h2><span class="status-pill status-missing">missing</span></summary>');
+    expect(output).toContain('<span class="tool-name">jafax</span><span class="overview-item-meta"><span class="status-pill status-missing">missing</span></span>');
+    expect(output).toContain('<details class="summary-card tool-card tool-card-status-missing" open><summary class="tool-card-header"><h2>jafax</h2><span class="tool-card-header-meta"><span class="status-pill status-missing">missing</span></span></summary>');
   });
 
   it('renders tool card status from overview status overrides', () => {
@@ -228,6 +228,38 @@ describe('renderHtmlSummary', () => {
 
     const output = renderHtmlSummary(overview, [makeParsedTool('jafax', '<section class="jafax-summary status-success">inner</section>')]);
 
-    expect(output).toContain('<details class="summary-card tool-card tool-card-status-failed" open><summary class="tool-card-header"><h2>jafax</h2><span class="status-pill status-failed">failed</span></summary>');
+    expect(output).toContain('<details class="summary-card tool-card tool-card-status-failed" open><summary class="tool-card-header"><h2>jafax</h2><span class="tool-card-header-meta"><span class="status-pill status-failed">failed</span></span></summary>');
+  });
+
+  it('renders version and elapsed chips before status when metadata is present', () => {
+    const overview: SummaryOverview = {
+      toolNames: ['jafax'],
+      toolStatuses: { jafax: 'success' },
+      diagnostics: [],
+      conditionWarnings: [],
+      health: {
+        status: 'info',
+        criticalCount: 0,
+        errorCount: 0,
+        warningCount: 0
+      },
+      overallStatus: DEFAULT_OK_STATUS
+    };
+
+    const parsedTools: ParsedToolSummary[] = [
+      {
+        tool: 'jafax',
+        metadata: { 'html-template': 'inline', version: '1.2.5', runningTime: '0.7s' },
+        htmlTemplateMode: 'inline',
+        htmlTemplateContent: '<div>jafax</div>',
+        htmlTemplateAvailable: true,
+        markdownContent: '# jafax'
+      }
+    ];
+
+    const output = renderHtmlSummary(overview, parsedTools);
+
+    expect(output).toContain('<span class="overview-item-meta"><span class="meta-pill">v1.2.5</span><span class="meta-pill">Elapsed: 0.7s</span><span class="status-pill status-success">success</span></span>');
+    expect(output).toContain('<span class="tool-card-header-meta"><span class="meta-pill">v1.2.5</span><span class="meta-pill">Elapsed: 0.7s</span><span class="status-pill status-success">success</span></span>');
   });
 });

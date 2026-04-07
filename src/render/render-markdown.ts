@@ -2,10 +2,23 @@ import { ParsedToolSummary } from '../parsers/parse-tool-summary-md';
 import { SummaryOverview } from '../summary/build-overview';
 
 export function renderMarkdownSummary(overview: SummaryOverview, parsedTools: ParsedToolSummary[]): string {
+  const metadataByTool = buildToolMetadataByName(parsedTools);
   const lines: string[] = ['# Voyager Summary', '', '## Overall Status', `- ${overview.overallStatus.title}: ${overview.overallStatus.message}`, '', '## Overview'];
 
   for (const toolName of overview.toolNames) {
-    lines.push(`- ${toolName} (${overview.toolStatuses[toolName] ?? 'unknown'})`);
+    const toolMetadata = metadataByTool.get(toolName) ?? { version: 'unknown', runningTime: 'unknown' };
+    const metadataParts: string[] = [];
+
+    if (toolMetadata.version !== 'unknown') {
+      metadataParts.push(`v${toolMetadata.version}`);
+    }
+
+    if (toolMetadata.runningTime !== 'unknown') {
+      metadataParts.push(`Elapsed: ${toolMetadata.runningTime}`);
+    }
+
+    const metadataLabel = metadataParts.length > 0 ? ` - ${metadataParts.join(' - ')}` : '';
+    lines.push(`- ${toolName} (${overview.toolStatuses[toolName] ?? 'unknown'})${metadataLabel}`);
   }
 
   lines.push('');
@@ -50,13 +63,13 @@ export function renderMarkdownSummary(overview: SummaryOverview, parsedTools: Pa
     for (const [category, tools] of categorizedTools.entries()) {
       lines.push(`### ${category}`);
       lines.push('');
-      appendTools(lines, tools, overview.toolStatuses);
+      appendTools(lines, tools, overview.toolStatuses, metadataByTool);
     }
 
     if (uncategorizedTools.length > 0) {
       lines.push('### Other');
       lines.push('');
-      appendTools(lines, uncategorizedTools, overview.toolStatuses);
+      appendTools(lines, uncategorizedTools, overview.toolStatuses, metadataByTool);
     }
   }
 
@@ -66,13 +79,41 @@ export function renderMarkdownSummary(overview: SummaryOverview, parsedTools: Pa
 function appendTools(
   lines: string[],
   tools: ParsedToolSummary[],
-  toolStatuses: SummaryOverview['toolStatuses']
+  toolStatuses: SummaryOverview['toolStatuses'],
+  metadataByTool: Map<string, ToolMetadata>
 ): void {
   for (const tool of tools) {
+    const toolMetadata = metadataByTool.get(tool.tool) ?? { version: 'unknown', runningTime: 'unknown' };
     lines.push(`#### ${tool.tool}`);
     lines.push(`- Consolidated status: ${toolStatuses[tool.tool] ?? 'unknown'}`);
+
+    if (toolMetadata.version !== 'unknown') {
+      lines.push(`- Version: ${toolMetadata.version}`);
+    }
+
+    if (toolMetadata.runningTime !== 'unknown') {
+      lines.push(`- Elapsed time: ${toolMetadata.runningTime}`);
+    }
+
     lines.push('');
     lines.push(tool.markdownContent);
     lines.push('');
   }
+}
+
+interface ToolMetadata {
+  version: string;
+  runningTime: string;
+}
+
+function buildToolMetadataByName(parsedTools: ParsedToolSummary[]): Map<string, ToolMetadata> {
+  return new Map<string, ToolMetadata>(
+    parsedTools.map((tool) => [
+      tool.tool,
+      {
+        version: tool.metadata.version ?? 'unknown',
+        runningTime: tool.metadata.runningTime ?? 'unknown'
+      }
+    ])
+  );
 }
