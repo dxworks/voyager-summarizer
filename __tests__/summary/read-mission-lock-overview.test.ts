@@ -23,10 +23,12 @@ describe('readMissionLockOverview', () => {
       '    name: Inspector Git',
       '    version: 1.0.0',
       '    runningTime: 0.8s',
+      '    finishedAt: 09.04.2026 17:40',
       '  - id: jafax',
       '    name: JaFaX',
       '    version: 2.3.4',
-      '    runningTime: 0.4s'
+      '    runningTime: 0.4s',
+      '    finishedAt: 09.04.2026 17:41'
     ].join('\n'));
 
     const result = await readMissionLockOverview(['inspector-git', 'jafax', 'honeydew'], '/tmp/voyager.lock.yml');
@@ -38,11 +40,13 @@ describe('readMissionLockOverview', () => {
     ]));
     expect(result.toolDetailsByKey.get(normalizeToolKey('inspector-git'))).toEqual({
       version: '1.0.0',
-      runningTime: '0.8s'
+      runningTime: '0.8s',
+      finishedAt: '09.04.2026 17:40'
     });
     expect(result.toolDetailsByKey.get(normalizeToolKey('jafax'))).toEqual({
       version: '2.3.4',
-      runningTime: '0.4s'
+      runningTime: '0.4s',
+      finishedAt: '09.04.2026 17:41'
     });
     expect(result.warnings).toEqual([]);
   });
@@ -75,7 +79,8 @@ describe('readMissionLockOverview', () => {
       '  - id: tool-id',
       '    name: JaFaX',
       '    version: 2.3.4',
-      '    runningTime: 0.4s'
+      '    runningTime: 0.4s',
+      '    finishedAt: 09.04.2026 17:41'
     ].join('\n'));
 
     const result = await readMissionLockOverview(['jafax'], '/tmp/voyager.lock.yml');
@@ -84,7 +89,25 @@ describe('readMissionLockOverview', () => {
     expect(result.executedTools).toEqual(new Set([normalizeToolKey('jafax')]));
     expect(result.toolDetailsByKey.get(normalizeToolKey('jafax'))).toEqual({
       version: '2.3.4',
-      runningTime: '0.4s'
+      runningTime: '0.4s',
+      finishedAt: '09.04.2026 17:41'
+    });
+  });
+
+  it('defaults finishedAt to unknown when lock value is missing', async () => {
+    readTextFileMock.mockResolvedValue([
+      'tools:',
+      '  - id: jafax',
+      '    version: 2.3.4',
+      '    runningTime: 0.4s'
+    ].join('\n'));
+
+    const result = await readMissionLockOverview(['jafax'], '/tmp/voyager.lock.yml');
+
+    expect(result.toolDetailsByKey.get(normalizeToolKey('jafax'))).toEqual({
+      version: '2.3.4',
+      runningTime: '0.4s',
+      finishedAt: 'unknown'
     });
   });
 });

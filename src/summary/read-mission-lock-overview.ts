@@ -11,6 +11,7 @@ export interface MissionLockOverview {
 export interface MissionLockToolDetails {
   version: string;
   runningTime: string;
+  finishedAt: string;
 }
 
 interface MissionLockFile {
@@ -22,6 +23,7 @@ interface MissionLockTool {
   name?: unknown;
   version?: unknown;
   runningTime?: unknown;
+  finishedAt?: unknown;
 }
 
 export async function readMissionLockOverview(
@@ -91,7 +93,8 @@ function parseMissionLockFile(
 
     const details: MissionLockToolDetails = {
       version: normalizeFieldValue(tool.version),
-      runningTime: normalizeFieldValue(tool.runningTime)
+      runningTime: normalizeFieldValue(tool.runningTime),
+      finishedAt: normalizeFieldValue(tool.finishedAt)
     };
 
     for (const key of normalizedKeys) {

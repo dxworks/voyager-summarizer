@@ -249,7 +249,7 @@ describe('renderHtmlSummary', () => {
     const parsedTools: ParsedToolSummary[] = [
       {
         tool: 'jafax',
-        metadata: { 'html-template': 'inline', version: '1.2.5', runningTime: '0.7s' },
+        metadata: { 'html-template': 'inline', version: '1.2.5', runningTime: '0.7s', finishedAt: '09.04.2026 17:40' },
         htmlTemplateMode: 'inline',
         htmlTemplateContent: '<div>jafax</div>',
         htmlTemplateAvailable: true,
@@ -259,7 +259,7 @@ describe('renderHtmlSummary', () => {
 
     const output = renderHtmlSummary(overview, parsedTools);
 
-    expect(output).toContain('<span class="overview-item-meta"><span class="meta-pill">v1.2.5</span><span class="meta-pill">Elapsed: 0.7s</span><span class="status-pill status-success">success</span></span>');
-    expect(output).toContain('<span class="tool-card-header-meta"><span class="meta-pill">v1.2.5</span><span class="meta-pill">Elapsed: 0.7s</span><span class="status-pill status-success">success</span></span>');
+    expect(output).toContain('<span class="overview-item-meta"><span class="meta-pill">v1.2.5</span><span class="meta-pill">Elapsed: 0.7s</span><span class="meta-pill">Finished: 09.04.2026 17:40</span><span class="status-pill status-success">success</span></span>');
+    expect(output).toContain('<span class="tool-card-header-meta"><span class="meta-pill">v1.2.5</span><span class="meta-pill">Elapsed: 0.7s</span><span class="meta-pill">Finished: 09.04.2026 17:40</span><span class="status-pill status-success">success</span></span>');
   });
 });

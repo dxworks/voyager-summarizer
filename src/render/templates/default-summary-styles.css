@@ -145,7 +145,7 @@
       border-radius: 999px;
       border: 1px solid transparent;
       min-height: 28px;
-      min-width: 102px;
+      min-width: 132px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -169,7 +169,7 @@
       font-weight: 700;
       letter-spacing: 0.03em;
       min-height: 28px;
-      min-width: 102px;
+      min-width: 132px;
       padding: 4px 10px;
       white-space: nowrap;
     }

@@ -160,7 +160,8 @@ function buildFallbackParsedTool(
       status,
       'html-template': 'inline',
       version: lockMetadata.version,
-      runningTime: lockMetadata.runningTime
+      runningTime: lockMetadata.runningTime,
+      finishedAt: lockMetadata.finishedAt
     },
     htmlTemplateMode: 'inline',
     htmlTemplateContent: `<div class="missing-summary"><p>${escapeHtml(message)}</p><p>Details: ${escapeHtml(parseError)}</p></div>`,
@@ -184,7 +185,8 @@ function applyMissionLockMetadata(
   return {
     ...metadata,
     version: overriddenVersion,
-    runningTime: lockMetadata.runningTime
+    runningTime: lockMetadata.runningTime,
+    finishedAt: lockMetadata.finishedAt
   };
 }
 
@@ -206,12 +208,13 @@ function resolveToolVersion(metadata: Record<string, string>, lockVersion: strin
   return normalizedOverride;
 }
 
-function getToolLockMetadata(toolKey: string, lockOverview: MissionLockOverview): { version: string; runningTime: string } {
+function getToolLockMetadata(toolKey: string, lockOverview: MissionLockOverview): { version: string; runningTime: string; finishedAt: string } {
   const toolDetails = lockOverview.toolDetailsByKey.get(toolKey);
   if (!toolDetails) {
     return {
       version: 'unknown',
-      runningTime: 'unknown'
+      runningTime: 'unknown',
+      finishedAt: 'unknown'
     };
   }
 

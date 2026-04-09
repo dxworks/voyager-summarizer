@@ -6,7 +6,7 @@ export function renderMarkdownSummary(overview: SummaryOverview, parsedTools: Pa
   const lines: string[] = ['# Voyager Summary', '', '## Overall Status', `- ${overview.overallStatus.title}: ${overview.overallStatus.message}`, '', '## Overview'];
 
   for (const toolName of overview.toolNames) {
-    const toolMetadata = metadataByTool.get(toolName) ?? { version: 'unknown', runningTime: 'unknown' };
+    const toolMetadata = metadataByTool.get(toolName) ?? { version: 'unknown', runningTime: 'unknown', finishedAt: 'unknown' };
     const metadataParts: string[] = [];
 
     if (toolMetadata.version !== 'unknown') {
@@ -15,6 +15,10 @@ export function renderMarkdownSummary(overview: SummaryOverview, parsedTools: Pa
 
     if (toolMetadata.runningTime !== 'unknown') {
       metadataParts.push(`Elapsed: ${toolMetadata.runningTime}`);
+    }
+
+    if (toolMetadata.finishedAt !== 'unknown') {
+      metadataParts.push(`Finished: ${toolMetadata.finishedAt}`);
     }
 
     const metadataLabel = metadataParts.length > 0 ? ` - ${metadataParts.join(' - ')}` : '';
@@ -83,7 +87,7 @@ function appendTools(
   metadataByTool: Map<string, ToolMetadata>
 ): void {
   for (const tool of tools) {
-    const toolMetadata = metadataByTool.get(tool.tool) ?? { version: 'unknown', runningTime: 'unknown' };
+    const toolMetadata = metadataByTool.get(tool.tool) ?? { version: 'unknown', runningTime: 'unknown', finishedAt: 'unknown' };
     lines.push(`#### ${tool.tool}`);
     lines.push(`- Consolidated status: ${toolStatuses[tool.tool] ?? 'unknown'}`);
 
@@ -95,6 +99,10 @@ function appendTools(
       lines.push(`- Elapsed time: ${toolMetadata.runningTime}`);
     }
 
+    if (toolMetadata.finishedAt !== 'unknown') {
+      lines.push(`- Finished at: ${toolMetadata.finishedAt}`);
+    }
+
     lines.push('');
     lines.push(tool.markdownContent);
     lines.push('');
@@ -104,6 +112,7 @@ function appendTools(
 interface ToolMetadata {
   version: string;
   runningTime: string;
+  finishedAt: string;
 }
 
 function buildToolMetadataByName(parsedTools: ParsedToolSummary[]): Map<string, ToolMetadata> {
@@ -112,7 +121,8 @@ function buildToolMetadataByName(parsedTools: ParsedToolSummary[]): Map<string, 
       tool.tool,
       {
         version: tool.metadata.version ?? 'unknown',
-        runningTime: tool.metadata.runningTime ?? 'unknown'
+        runningTime: tool.metadata.runningTime ?? 'unknown',
+        finishedAt: tool.metadata.finishedAt ?? 'unknown'
       }
     ])
   );

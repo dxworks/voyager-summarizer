@@ -170,7 +170,7 @@ describe('renderMarkdownSummary', () => {
     const parsedTools: ParsedToolSummary[] = [
       {
         tool: 'jafax',
-        metadata: { 'html-template': 'inline', version: '1.2.5', runningTime: '0.7s' },
+        metadata: { 'html-template': 'inline', version: '1.2.5', runningTime: '0.7s', finishedAt: '09.04.2026 17:40' },
         htmlTemplateMode: 'inline',
         htmlTemplateContent: '<div>jafax</div>',
         htmlTemplateAvailable: true,
@@ -180,8 +180,9 @@ describe('renderMarkdownSummary', () => {
 
     const output = renderMarkdownSummary(overview, parsedTools);
 
-    expect(output).toContain('- jafax (success) - v1.2.5 - Elapsed: 0.7s');
+    expect(output).toContain('- jafax (success) - v1.2.5 - Elapsed: 0.7s - Finished: 09.04.2026 17:40');
     expect(output).toContain('- Version: 1.2.5');
     expect(output).toContain('- Elapsed time: 0.7s');
+    expect(output).toContain('- Finished at: 09.04.2026 17:40');
   });
 });

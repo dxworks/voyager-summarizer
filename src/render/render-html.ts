@@ -8,7 +8,7 @@ export function renderHtmlSummary(overview: SummaryOverview, parsedTools: Parsed
   const overviewItems = overview.toolNames
     .map((toolName) => {
       const status = overview.toolStatuses[toolName] ?? 'unknown';
-      const toolMetadata = metadataByTool.get(toolName) ?? { version: 'unknown', runningTime: 'unknown' };
+      const toolMetadata = metadataByTool.get(toolName) ?? { version: 'unknown', runningTime: 'unknown', finishedAt: 'unknown' };
       return `<li class="overview-item"><span class="tool-name">${escapeHtml(toolName)}</span>${renderToolMetaChips(toolMetadata, status, 'overview-item-meta')}</li>`;
     })
     .join('');
@@ -77,7 +77,7 @@ function renderToolSections(
 
   const categorySections = Array.from(categorizedTools.entries())
     .map(([category, tools]) => {
-      const categoryToolCards = tools.map((tool) => renderToolCard(tool, toolStatuses[tool.tool] ?? 'unknown', metadataByTool.get(tool.tool) ?? { version: 'unknown', runningTime: 'unknown' })).join('');
+      const categoryToolCards = tools.map((tool) => renderToolCard(tool, toolStatuses[tool.tool] ?? 'unknown', metadataByTool.get(tool.tool) ?? { version: 'unknown', runningTime: 'unknown', finishedAt: 'unknown' })).join('');
       const countLabel = tools.length === 1 ? '1 tool' : `${tools.length} tools`;
       return `<details class="category-group"><summary class="category-summary"><span class="category-title">${escapeHtml(category)}</span><span class="category-count">${countLabel}</span></summary><div class="category-tools">${categoryToolCards}</div></details>`;
     })
@@ -86,7 +86,7 @@ function renderToolSections(
   const otherCategorySection = uncategorizedTools.length > 0
     ? (() => {
         const otherToolCards = uncategorizedTools
-          .map((tool) => renderToolCard(tool, toolStatuses[tool.tool] ?? 'unknown', metadataByTool.get(tool.tool) ?? { version: 'unknown', runningTime: 'unknown' }))
+          .map((tool) => renderToolCard(tool, toolStatuses[tool.tool] ?? 'unknown', metadataByTool.get(tool.tool) ?? { version: 'unknown', runningTime: 'unknown', finishedAt: 'unknown' }))
           .join('');
         const countLabel = uncategorizedTools.length === 1 ? '1 tool' : `${uncategorizedTools.length} tools`;
         return `<details class="category-group"><summary class="category-summary"><span class="category-title">Other</span><span class="category-count">${countLabel}</span></summary><div class="category-tools">${otherToolCards}</div></details>`;
@@ -103,6 +103,7 @@ function renderToolCard(tool: ParsedToolSummary, status: string, toolMetadata: T
 interface ToolMetadata {
   version: string;
   runningTime: string;
+  finishedAt: string;
 }
 
 function buildToolMetadataByName(parsedTools: ParsedToolSummary[]): Map<string, ToolMetadata> {
@@ -111,7 +112,8 @@ function buildToolMetadataByName(parsedTools: ParsedToolSummary[]): Map<string, 
       tool.tool,
       {
         version: tool.metadata.version ?? 'unknown',
-        runningTime: tool.metadata.runningTime ?? 'unknown'
+        runningTime: tool.metadata.runningTime ?? 'unknown',
+        finishedAt: tool.metadata.finishedAt ?? 'unknown'
       }
     ])
   );
@@ -126,6 +128,10 @@ function renderToolMetaChips(toolMetadata: ToolMetadata, status: string, wrapper
 
   if (toolMetadata.runningTime !== 'unknown') {
     chips.push(`<span class="meta-pill">Elapsed: ${escapeHtml(toolMetadata.runningTime)}</span>`);
+  }
+
+  if (toolMetadata.finishedAt !== 'unknown') {
+    chips.push(`<span class="meta-pill">Finished: ${escapeHtml(toolMetadata.finishedAt)}</span>`);
   }
 
   chips.push(`<span class="status-pill status-${escapeHtml(status)}">${escapeHtml(status)}</span>`);
