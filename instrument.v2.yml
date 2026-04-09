@@ -1,0 +1,58 @@
+name: voyager-summarizer
+id: voyager-summarizer
+version: 1.0.0
+runOrder: 9999
+
+actions:
+  summary:
+    parameters:
+      resultArchive: ${resultsDir}
+    commands:
+      generate-summary:
+        id: generate-summary
+        dir: ${instrumentPath}
+        command: >-
+          voyager-summarizer.exe summary
+          --tool-md blackduck=${blackduckSummaryMd}
+          --tool-html blackduck=${blackduckSummaryHtml}
+          --tool-category blackduck="${blackduckSummaryCategory}"
+          --tool-md codeframe=${codeframeSummaryMd}
+          --tool-html codeframe=${codeframeSummaryHtml}
+          --tool-category codeframe="${codeframeSummaryCategory}"
+          --tool-md depminer=${depminerSummaryMd}
+          --tool-html depminer=${depminerSummaryHtml}
+          --tool-category depminer="${depminerSummaryCategory}"
+          --tool-md dude=${dudeSummaryMd}
+          --tool-html dude=${dudeSummaryHtml}
+          --tool-category dude="${dudeSummaryCategory}"
+          --tool-md inspector-git=${inspector-gitSummaryMd}
+          --tool-html inspector-git=${inspector-gitSummaryHtml}
+          --tool-category inspector-git="${inspector-gitSummaryCategory}"
+          --tool-md insider=${insiderSummaryMd}
+          --tool-html insider=${insiderSummaryHtml}
+          --tool-category insider="${insiderSummaryCategory}"
+          --tool-md jafax=${jafaxSummaryMd}
+          --tool-html jafax=${jafaxSummaryHtml}
+          --tool-category jafax="${jafaxSummaryCategory}"
+          --tool-md honeydew=${honeydewSummaryMd}
+          --tool-html honeydew=${honeydewSummaryHtml}
+          --tool-category honeydew="${honeydewSummaryCategory}"
+          --tool-md lizard=${lizardSummaryMd}
+          --tool-html lizard=${lizardSummaryHtml}
+          --tool-category lizard="${lizardSummaryCategory}"
+          --mission-lock-file "${resultArchive}::voyager.lock.yml"
+          --out-md ${instrumentPath}/results/summary.md
+          --out-html ${instrumentPath}/results/summary.html
+
+  clean:
+    with:
+      locations:
+        - source: ${instrumentDir}/results
+  pack:
+    with:
+      locations:
+        - source: ${instrumentDir}/results
+          destination: /results
+          files:
+            - summary.md
+            - summary.html
