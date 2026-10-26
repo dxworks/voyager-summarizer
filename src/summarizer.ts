@@ -7,7 +7,7 @@ const program = new Command();
 program
   .name('voyager-summarizer')
   .description('Centralize outcomes from multiple analysis tools')
-  .version('0.0.0');
+  .version('dev');
 
 program
   .command('summary')
