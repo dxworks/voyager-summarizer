@@ -45,6 +45,7 @@ actions:
             --out-md ${instrumentPath}/results/summary.md
             --out-html ${instrumentPath}/results/summary.html
           linux: >-
+            chmod +x ./voyager-summarizer-linux-x64 &&
             ./voyager-summarizer-linux-x64 summary
             --tool-md blackduck=${blackduckSummaryMd}
             --tool-html blackduck=${blackduckSummaryHtml}
@@ -77,6 +78,7 @@ actions:
             --out-md ${instrumentPath}/results/summary.md
             --out-html ${instrumentPath}/results/summary.html
           mac: >-
+            chmod +x ./voyager-summarizer-macos-$(uname -m | sed 's/x86_64/x64/') &&
             ./voyager-summarizer-macos-$(uname -m | sed 's/x86_64/x64/') summary
             --tool-md blackduck=${blackduckSummaryMd}
             --tool-html blackduck=${blackduckSummaryHtml}
