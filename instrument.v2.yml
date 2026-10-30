@@ -5,6 +5,8 @@ runOrder: 9999
 
 actions:
   summary:
+    md-file: results/summary.md
+    html-file: results/summary.html
     parameters:
       resultArchive: ${resultsDir}
     commands:
