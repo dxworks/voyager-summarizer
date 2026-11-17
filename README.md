@@ -4,7 +4,7 @@
 
 ## Requirements
 
-- Node.js `>=24.13.0 <26`
+- Node.js `>=26`
 
 ## Setup
 

@@ -21,11 +21,11 @@
     "dist"
   ],
   "engines": {
-    "node": ">=24.13.0 <26"
+    "node": ">=26"
   },
   "scripts": {
     "build": "npm run clean && tsc -p tsconfig.build.json && npm run copy:assets",
-    "build:bundle": "npm run build && esbuild dist/src/summarizer.js --bundle --platform=node --format=cjs --target=node24 --loader:.html=text --loader:.css=text --outfile=dist/sea/summarizer.bundle.cjs",
+    "build:bundle": "npm run build && esbuild dist/src/summarizer.js --bundle --platform=node --format=cjs --target=node26 --loader:.html=text --loader:.css=text --outfile=dist/sea/summarizer.bundle.cjs",
     "build:sea": "npm run build:bundle && node scripts/build-sea.mjs",
     "copy:assets": "node scripts/copy-static-assets.mjs",
     "clean": "rimraf dist && rimraf --glob \"*.tsbuildinfo\"",
@@ -49,7 +49,7 @@
     "@types/adm-zip": "^0.5.7",
     "@types/jest": "^30.0.0",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^25.0.10",
+    "@types/node": "^26.6.6",
     "esbuild": "^0.25.11",
     "eslint": "^9.39.2",
     "jest": "^30.2.0",
