@@ -12,6 +12,16 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  # Shared dxworks release gate (build + test + Trivy), as the other tools' Voyager releases
+  gate:
+    if: startsWith(github.ref, 'refs/tags/')
+    uses: dxworks/pipelines/.github/workflows/release-gate.yml@v1
+    with:
+      node-version: '26'
+    permissions:
+      contents: read
+      security-events: write
+
   build-binaries:
     name: Build ${{ matrix.target.id }}
     runs-on: ${{ matrix.target.runs_on }}
@@ -144,8 +154,10 @@ jobs:
     name: Package voyager-summarizer
     runs-on: ubuntu-latest
     needs: build-binaries
+    outputs:
+      semver: ${{ steps.semver_parser.outputs.semver }}
     permissions:
-      contents: write
+      contents: read
       actions: write
     steps:
       - name: Checkout code
@@ -211,20 +223,23 @@ jobs:
             -q '.artifacts[] | select(.workflow_run.head_branch == env.PR_BRANCH and .workflow_run.id < (env.GITHUB_RUN_ID | tonumber)) | .id' \
             | while read -r id; do gh api -X DELETE "repos/$GITHUB_REPOSITORY/actions/artifacts/$id"; done
 
-      - name: Prepare Release Notes
+      - name: Upload release archive
         if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          mkdir -p releaseNotes
-          touch ${{ github.workspace }}/releaseNotes/v${{ steps.semver_parser.outputs.semver }}.md
-
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+        uses: actions/upload-artifact@v4
         with:
-          name: Voyager Summarizer ${{ steps.semver_parser.outputs.semver }} (Voyager)
-          body_path: ${{ github.workspace }}/releaseNotes/v${{ steps.semver_parser.outputs.semver }}.md
-          body: ""
-          prerelease: false
-          draft: true
-          fail_on_unmatched_files: true
-          files: voyager-summarizer-voyager.zip
+          name: release-archive
+          path: voyager-summarizer-voyager.zip
+          if-no-files-found: error
+
+  # Shared dxworks GitHub release step (published, not a draft), as the other tools
+  github-release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [gate, package]
+    uses: dxworks/pipelines/.github/workflows/release-github.yml@v1
+    with:
+      version: ${{ needs.package.outputs.semver }}
+      tag: ${{ github.ref_name }}
+      release-name: Voyager Summarizer ${{ needs.package.outputs.semver }} (Voyager)
+      asset-name: voyager-summarizer-voyager.zip
+    permissions:
+      contents: write
