@@ -47,8 +47,8 @@ actions:
             --out-md ${instrumentPath}/results/summary.md
             --out-html ${instrumentPath}/results/summary.html
           linux: >-
-            chmod +x ./voyager-summarizer-linux-x64 &&
-            ./voyager-summarizer-linux-x64 summary
+            chmod +x ./voyager-summarizer-linux-$(uname -m | sed 's/x86_64/x64/; s/aarch64/arm64/') &&
+            ./voyager-summarizer-linux-$(uname -m | sed 's/x86_64/x64/; s/aarch64/arm64/') summary
             --tool-md blackduck=${blackduckSummaryMd}
             --tool-html blackduck=${blackduckSummaryHtml}
             --tool-category blackduck="${blackduckSummaryCategory}"
@@ -80,8 +80,8 @@ actions:
             --out-md ${instrumentPath}/results/summary.md
             --out-html ${instrumentPath}/results/summary.html
           mac: >-
-            chmod +x ./voyager-summarizer-macos-$(uname -m | sed 's/x86_64/x64/') &&
-            ./voyager-summarizer-macos-$(uname -m | sed 's/x86_64/x64/') summary
+            chmod +x ./voyager-summarizer-macos-$([ "$(uname -m)" = arm64 ] && [ -f ./voyager-summarizer-macos-arm64 ] && echo arm64 || echo x64) &&
+            ./voyager-summarizer-macos-$([ "$(uname -m)" = arm64 ] && [ -f ./voyager-summarizer-macos-arm64 ] && echo arm64 || echo x64) summary
             --tool-md blackduck=${blackduckSummaryMd}
             --tool-html blackduck=${blackduckSummaryHtml}
             --tool-category blackduck="${blackduckSummaryCategory}"
